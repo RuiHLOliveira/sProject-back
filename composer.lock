@@ -1,0 +1,54 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "da9c3d805d2baace5e977a608c647d6d",
+    "packages": [
+        {
+            "name": "ruihloliveira/phpminirouter",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/RuiHLOliveira/PhpMiniRouter.git",
+                "reference": "18c61fbf10986791c11465ddc50cb42233fcc4cd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/RuiHLOliveira/PhpMiniRouter/zipball/18c61fbf10986791c11465ddc50cb42233fcc4cd",
+                "reference": "18c61fbf10986791c11465ddc50cb42233fcc4cd",
+                "shasum": ""
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "PhpMiniRouter\\": "src/"
+                }
+            },
+            "authors": [
+                {
+                    "name": "Rui",
+                    "email": "ruihloliveira@gmail.com"
+                }
+            ],
+            "support": {
+                "source": "https://github.com/RuiHLOliveira/PhpMiniRouter/tree/main",
+                "issues": "https://github.com/RuiHLOliveira/PhpMiniRouter/issues"
+            },
+            "time": "2022-07-26T11:41:57+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "ruihloliveira/phpminirouter": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": [],
+    "plugin-api-version": "2.1.0"
+}

@@ -1,0 +1,22 @@
+{
+    "name": "ruihloliveira/phpdailymanager",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "PhpDailyManager\\": "src/"
+        }
+    },
+    "authors": [{
+        "name": "Rui",
+        "email": "ruihloliveira@gmail.com"
+    }],
+    "repositories":[
+        {
+            "type": "github",
+            "url": "https://github.com/RuiHLOliveira/PhpMiniRouter.git"
+        }
+    ],
+    "require": {
+        "ruihloliveira/phpminirouter": "dev-main"
+    }
+}
