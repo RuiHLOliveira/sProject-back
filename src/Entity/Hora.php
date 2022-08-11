@@ -85,6 +85,12 @@ class Hora implements JsonSerializable
      */
     private $atividades;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="horas")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $usuario;
+
     public function __construct()
     {
         $this->atividades = new ArrayCollection();
@@ -181,6 +187,18 @@ class Hora implements JsonSerializable
                 $atividade->setHora(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUsuario(): ?User
+    {
+        return $this->usuario;
+    }
+
+    public function setUsuario(?User $usuario): self
+    {
+        $this->usuario = $usuario;
 
         return $this;
     }

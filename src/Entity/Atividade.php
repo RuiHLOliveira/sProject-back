@@ -57,6 +57,12 @@ class Atividade implements JsonSerializable
      */
     private $deleted_at;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="atividades")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $usuario;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -118,6 +124,18 @@ class Atividade implements JsonSerializable
     public function setDeletedAt(?\DateTimeImmutable $deleted_at): self
     {
         $this->deleted_at = $deleted_at;
+
+        return $this;
+    }
+
+    public function getUsuario(): ?User
+    {
+        return $this->usuario;
+    }
+
+    public function setUsuario(?User $usuario): self
+    {
+        $this->usuario = $usuario;
 
         return $this;
     }

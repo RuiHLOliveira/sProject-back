@@ -86,6 +86,12 @@ class Dia implements JsonSerializable
      */
     private $horas;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="dias")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $usuario;
+    
     public function __construct()
     {
         $this->horas = new ArrayCollection();
@@ -170,6 +176,18 @@ class Dia implements JsonSerializable
                 $hora->setDia(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUsuario(): ?User
+    {
+        return $this->usuario;
+    }
+
+    public function setUsuario(?User $usuario): self
+    {
+        $this->usuario = $usuario;
 
         return $this;
     }
