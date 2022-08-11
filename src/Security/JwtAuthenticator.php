@@ -5,6 +5,7 @@ use App\Entity\User;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Doctrine\ORM\EntityManagerInterface;
+use SebastianBergmann\Type\MixedType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -40,7 +41,7 @@ class JwtAuthenticator extends AbstractGuardAuthenticator
         return $request->getPathInfo() !== '/auth/login' && $request->getPathInfo() !== '/auth/register';
     }
 
-    public function getCredentials(Request $request): ?bool
+    public function getCredentials(Request $request)
     {
         try {
             $token = str_replace('Bearer ', '', $request->headers->get('Authorization'));
