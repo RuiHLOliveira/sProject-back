@@ -5,17 +5,32 @@ namespace App\Entity;
 use JsonSerializable;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\AtividadeRepository;
+use Exception;
 
 /**
  * @ORM\Entity(repositoryClass=AtividadeRepository::class)
  */
 class Atividade implements JsonSerializable
 {
+
+    const SITUACAO_PENDENTE = 0;
+    const SITUACAO_CONCLUIDO = 1;
+    const SITUACAO_FALHA = 2;
+
+    const DESCRITIVOS_SITUACAO = [
+        self::SITUACAO_PENDENTE => 'pendente',
+        self::SITUACAO_CONCLUIDO => 'concluida',
+        self::SITUACAO_FALHA => 'falhou',
+    ];
+
     public function jsonSerialize()
     {
+        $this->fillSituacaoDescritivo();
         $array = [
             'id' => $this->getId(),
             'descricao' => $this->getDescricao(),
+            'situacao' => $this->getSituacao(),
+            'situacaoDescritivo' => $this->getSituacaoDescritivo(),
             'createdAt' => $this->getCreatedAt(),
             'updatedAt' => $this->getUpdatedAt(),
             'deletedAt' => $this->getDeletedAt(),
@@ -23,6 +38,35 @@ class Atividade implements JsonSerializable
 
         return $array;
     }
+
+    private function fillSituacaoDescritivo(){
+        $this->setSituacaoDescritivo(self::DESCRITIVOS_SITUACAO[$this->getSituacao()]);
+    }
+
+    public function falhar(){
+        if($this->situacao != Atividade::SITUACAO_PENDENTE) {
+            throw new Exception('Não é possível concluir uma tarefa que não está pendente.');
+        }
+        $this->situacao = Atividade::SITUACAO_FALHA;
+        return $this;
+    }
+
+    public function concluir(){
+        if($this->situacao != Atividade::SITUACAO_PENDENTE) {
+            throw new Exception('Não é possível concluir uma tarefa que não está pendente.');
+        }
+        $this->situacao = Atividade::SITUACAO_CONCLUIDO;
+        return $this;
+    }
+
+    public function desconcluir(){
+        if($this->situacao != Atividade::SITUACAO_CONCLUIDO) {
+            throw new Exception('Não é possível concluir uma tarefa que não está pendente.');
+        }
+        $this->situacao = Atividade::SITUACAO_PENDENTE;
+        return $this;
+    }
+
 
     /**
      * @ORM\Id
@@ -62,6 +106,13 @@ class Atividade implements JsonSerializable
      * @ORM\JoinColumn(nullable=false)
      */
     private $usuario;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $situacao;
+
+    private $situacaoDescritivo;
 
     public function getId(): ?int
     {
@@ -137,6 +188,30 @@ class Atividade implements JsonSerializable
     {
         $this->usuario = $usuario;
 
+        return $this;
+    }
+
+    public function getSituacao(): ?int
+    {
+        return $this->situacao;
+    }
+
+    public function setSituacao(int $situacao): self
+    {
+        $this->situacao = $situacao;
+        $this->fillSituacaoDescritivo();
+
+        return $this;
+    }
+
+    public function getSituacaoDescritivo(): ?string
+    {
+        return $this->situacaoDescritivo;
+    }
+
+    public function setSituacaoDescritivo(string $situacaoDescritivo): self
+    {
+        $this->situacaoDescritivo = $situacaoDescritivo;
         return $this;
     }
 }

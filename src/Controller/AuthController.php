@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use App\Service\AuthService;
 use App\Entity\InvitationToken;
 use App\Repository\UserRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -17,15 +18,25 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
+use function PHPUnit\Framework\objectHasAttribute;
+
 class AuthController extends AbstractController
 {
+
+    private $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
 
     /**
      * @Route("/auth/register", name="register", methods={"POST"})
      */
-    public function register(Request $request, ManagerRegistry $doctrine, UserPasswordEncoderInterface $encoder)
+    public function register(Request $request)
     {
         try {
+            
             $requestData = $request->getContent();
             $requestData = json_decode($requestData);
             $password = $requestData->password;
@@ -39,31 +50,25 @@ class AuthController extends AbstractController
             if($password !== $repeatPassword) throw new BadRequestHttpException("Passwords must be equal.");
             if($invitationToken == '') throw new BadRequestHttpException("Invitation Token was not sent.");
 
-            $invitationToken = $doctrine->getRepository(InvitationToken::class)->findOneBy([
-                'invitation_token' => $invitationToken,
-                'active' => true
-            ]);
-
-            if($invitationToken == null) throw new NotFoundHttpException("Invitation Token not found or already used.");
             
-            $invitationTokenEmail = $invitationToken->getEmail();
-            if($invitationTokenEmail !== null && $invitationTokenEmail !== $email) throw new NotFoundHttpException("This email can't use this Invitation Token.");
-
             $user = new User();
-            $user->setPassword($encoder->encodePassword($user, $password));
+            $user->setPassword($password);
             $user->setEmail($email);
-            $em = $doctrine->getManager();
-            $em->persist($user);
 
-            $invitationToken->setActive(false);
-            $em->persist($invitationToken);
-            
-            $em->flush();
-            return $this->json([
-                'user' => $user->getEmail()
-            ]);
+            $response = $this->authService->registerUser($user, $invitationToken);
+
+            return $this->json($user,201);
         } catch (\Throwable $th) {
             return new JsonResponse($th->getMessage(),500);
+        }
+    }
+
+    private function validateLoginData($requestData) {
+        if( !property_exists($requestData, 'email') || $requestData->email == ''){
+            throw new BadRequestHttpException("email was not sent.");
+        }
+        if( !property_exists($requestData, 'password') || $requestData->password == ''){
+            throw new BadRequestHttpException("password was not sent.");
         }
     }
 
@@ -74,8 +79,10 @@ class AuthController extends AbstractController
     {
         try {
             $requestData = json_decode($request->getContent());
-            $email = $requestData->email;
+            $this->validateLoginData($requestData);
             $password = $requestData->password;
+            $email = $requestData->email;
+
             //busca o usuario pelo email
             $user = $userRepository->findOneBy(['email' => $email]);
 
@@ -101,7 +108,7 @@ class AuthController extends AbstractController
                 'refreshToken' => $tokens['refreshToken']
             ]);
         } catch (\Throwable $th) {
-            return new JsonResponse($th->getMessage(),500);
+            return new JsonResponse(['message' => $th->getMessage()],500);
         }
     }
 

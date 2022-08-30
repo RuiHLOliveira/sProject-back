@@ -6,6 +6,7 @@ use Exception;
 use App\Entity\Hora;
 use DateTimeImmutable;
 use App\Entity\Atividade;
+use App\Service\AtividadesService;
 use PhpParser\JsonDecoder;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,12 +18,28 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class AtividadesController extends AbstractController
 {
+    
+    private $atividadesService;
+
+    public function __construct(AtividadesService $atividadesService)
+    {
+        $this->atividadesService = $atividadesService;
+    }
+
     /**
      * @Route("/atividades", name="app_atividades_list", methods={"GET", "HEAD"})
      */
     public function index(): Response
     {
-        throw new Exception('implementar');
+        try {
+            $usuario = $this->getUser();
+            
+            $entityList = $this->atividadesService->index($usuario);
+
+            return new JsonResponse($entityList);
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -33,25 +50,14 @@ class AtividadesController extends AbstractController
         try {
             $usuario = $this->getUser();
             $requestData = json_decode($request->getContent());
+
             $descricao = $requestData->descricao;
             $horaId = $requestData->hora;
 
-            $hora = $doctrine->getRepository(Hora::class)->findOneBy([
-                'id' => $horaId,
-                'usuario' => $usuario
-            ]);
-            if($hora == null) {
-                throw new NotFoundHttpException('Hora não encontrada.');
-            }
-            $entityManager = $doctrine->getManager();
-            $atividade = new Atividade();
-            $atividade->setDescricao($descricao);
-            $atividade->setHora($hora);
-            $atividade->setUsuario($usuario);
-            $atividade->setCreatedAt(new DateTimeImmutable());
-            $entityManager->persist($atividade);
-            $entityManager->flush();
-            return new JsonResponse();
+            $atividade = $this->atividadesService->factoryAtividade($descricao, $horaId, $usuario);
+            $atividade = $this->atividadesService->createNewAtividade($atividade);
+
+            return new JsonResponse($atividade, Response::HTTP_CREATED);
         } catch (\Exception $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -86,4 +92,59 @@ class AtividadesController extends AbstractController
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * @Route("/atividades/{id}/concluir", name="app_atividades_concluir", methods={"POST"})
+     */
+    public function concluiAtividade($id, Request $request, ManagerRegistry $doctrine): JsonResponse
+    {
+        try {
+            $usuario = $this->getUser();
+
+            $atividade = $doctrine->getRepository(Atividade::class)->findOneBy([
+                'id' => $id,
+                'usuario' => $usuario
+            ]);
+            if($atividade == null) {
+                throw new NotFoundHttpException('Atividade não encontrada.');
+            }
+
+            $atividade = $this->atividadesService->concluir($atividade, $usuario);
+            
+            $atividade = $this->atividadesService->find($atividade->getId(), $usuario);
+
+            return new JsonResponse($atividade, Response::HTTP_OK);
+            
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    /**
+     * @Route("/atividades/{id}/falhar", name="app_atividades_falhar", methods={"POST"})
+     */
+    public function falharAtividade($id, Request $request, ManagerRegistry $doctrine): JsonResponse
+    {
+        try {
+            $usuario = $this->getUser();
+
+            $atividade = $doctrine->getRepository(Atividade::class)->findOneBy([
+                'id' => $id,
+                'usuario' => $usuario
+            ]);
+            if($atividade == null) {
+                throw new NotFoundHttpException('Atividade não encontrada.');
+            }
+
+            $atividade = $this->atividadesService->falhar($atividade, $usuario);
+            
+            $atividade = $this->atividadesService->find($atividade->getId(), $usuario);
+
+            return new JsonResponse($atividade, Response::HTTP_OK);
+            
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

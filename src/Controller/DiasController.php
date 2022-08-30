@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Dia;
 use App\Entity\Hora;
+use App\Service\DiasService;
 use DateTimeImmutable;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,21 +15,33 @@ use Symfony\Component\HttpFoundation\Response;
 
 class DiasController extends AbstractController
 {
+
+    /**
+     * @var \App\Service\DiasService;
+     */
+    private $diasService;
+
+    public function __construct(DiasService $diasService)
+    {
+        $this->diasService = $diasService;
+    }
+
     /**
      * @Route("/dias", name="app_dias_list", methods={"GET","HEAD"})
      */
-    public function index(Request $request, ManagerRegistry $doctrine): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
             $usuario = $this->getUser();
-            $dias = $doctrine->getRepository(Dia::class)->findBy([
-                'usuario' => $usuario
-            ]);
 
-            foreach($dias as $key => $dia) {
-                $dias[$key]->serializarHoras();
-                $dias[$key]->serializarAtividades();
+            $orderBy = null;
+            if($request->query->get('orderBy') != null){
+                $orderBy = $request->query->get('orderBy');
+                $orderBy = explode(',', $orderBy);
+                $orderBy = [$orderBy[0] => $orderBy[1]];
             }
+
+            $dias = $this->diasService->index($usuario, $orderBy);
 
             return new JsonResponse($dias);
         } catch (\Exception $e) {
@@ -39,32 +52,16 @@ class DiasController extends AbstractController
     /**
      * @Route("/dias", name="app_dias_create", methods={"POST"})
      */
-    public function create(Request $request, ManagerRegistry $doctrine): JsonResponse
+    public function create(Request $request): JsonResponse
     {
         try {
             $requestObj = json_decode($request->getContent());
 
-            $entityManager = $doctrine->getManager();
-
             $usuario = $this->getUser();
 
             $dataCompleta = new DateTimeImmutable($requestObj->dataCompleta);
-            $dia = new Dia();
-            $dia->setDataCompleta($dataCompleta);
-            $dia->setCreatedAt(new DateTimeImmutable());
-            $dia->setUsuario($usuario);
-            $entityManager->persist($dia);
-            $entityManager->flush();
 
-            for ($i=6; $i < 23; $i++) { 
-                $hora = new Hora();
-                $hora->setHora($i);
-                $hora->setDia($dia);
-                $hora->setUsuario($usuario);
-                $hora->setCreatedAt(new DateTimeImmutable());
-                $entityManager->persist($hora);
-            }
-            $entityManager->flush();
+            $dia = $this->diasService->createNewDiaFromDataCompleta($dataCompleta, $usuario);
 
             return new JsonResponse($dia, Response::HTTP_CREATED);
         } catch (\Exception $e) {
