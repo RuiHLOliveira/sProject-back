@@ -51,7 +51,8 @@ class BackupController extends AbstractController
     {
         try {
             $usuario = $this->getUser();
-            $requestData = json_decode($request->getContent());
+            $requestData = $request->getContent();
+            $requestData = json_decode($requestData);
             
             $entityManager = $doctrine->getManager();
             $entityManager->getConnection()->beginTransaction();
@@ -144,6 +145,11 @@ class BackupController extends AbstractController
                             
                         $atividadeObj = new Atividade();
                         $atividadeObj->setDescricao($atividade->descricao);
+                        if(property_exists($atividade,'situacao')) {
+                            $atividadeObj->setSituacao($atividade->situacao);
+                        } else {
+                            $atividadeObj->setSituacao(Atividade::SITUACAO_PENDENTE);
+                        }
 
                         $timezone = new DateTimeZone($atividade->createdAt->timezone);
                         $createdAt = new DateTimeImmutable($atividade->createdAt->date, $timezone);
