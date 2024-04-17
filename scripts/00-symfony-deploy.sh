@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+chmod +x bin/console
+
 echo "Running composer"
 composer install --no-dev --optimize-autoloader
 
