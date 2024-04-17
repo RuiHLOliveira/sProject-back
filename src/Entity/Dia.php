@@ -15,44 +15,36 @@ class Dia implements JsonSerializable
 {
     public function jsonSerialize()
     {
+        // $array = parent::jsonSerialize();
         $array = [
             'id' => $this->getId(),
-            'dataCompleta' => $this->getDataCompleta()->format('Y-m-d'),
+            'dataCompleta' => $this->getDataCompleta()->format('Y-m-d H:i:s'),
             'createdAt' => $this->getCreatedAt(),
             'updatedAt' => $this->getUpdatedAt(),
             'deletedAt' => $this->getDeletedAt(),
         ];
-
-        
-        if($this->serializarHoras) {
-            $array['horas'] = $this->horasArray;
+        if($this->serializarAtividades) {
+            $array['atividades'] = $this->atividadesArray;
         }
-
         return $array;
     }
 
+    /**
+     * Marca as atividades deste dia para serem serializadas
+     */
     public function serializarAtividades(){
-        foreach ($this->horasArray as $key => $hora) {
-            $this->horasArray[$key]->serializarAtividades();
-        }
-    }
-
-    public function serializarHoras(){
-        $this->serializarHoras = true;
-        $this->horasToArray();
-    }
-
-    public function horasToArray() {
-        $collection = $this->getHoras();
-        $collection = $collection->toArray();
-        // foreach ($collection as $key => $item) {
-        //     $collection[$key] = $item;
-        // }
-        $this->horasArray = $collection;
+        $this->serializarAtividades = true;
+        $this->atividadesToArray();
     }
     
-    private $serializarHoras;
-    private $horasArray;
+    public function atividadesToArray() {
+        $collection = $this->getAtividades();
+        $collection = $collection->toArray();
+        $this->atividadesArray = $collection;
+    }
+    
+    private $serializarAtividades;
+    private $atividadesArray;
 
     /**
      * @ORM\Id
@@ -81,20 +73,26 @@ class Dia implements JsonSerializable
      */
     private $deleted_at;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Hora::class, mappedBy="dia")
-     */
-    private $horas;
+    // /**
+    //  * @ORM\OneToMany(targetEntity=Hora::class, mappedBy="dia")
+    //  */
+    // private $horas;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="dias")
      * @ORM\JoinColumn(nullable=false)
      */
     private $usuario;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Atividade::class, mappedBy="dia")
+     */
+    private $atividades;
     
     public function __construct()
     {
-        $this->horas = new ArrayCollection();
+        // $this->horas = new ArrayCollection();
+        $this->atividades = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -150,36 +148,6 @@ class Dia implements JsonSerializable
         return $this;
     }
 
-    /**
-     * @return Collection<int, Hora>
-     */
-    public function getHoras(): Collection
-    {
-        return $this->horas;
-    }
-
-    public function addHora(Hora $hora): self
-    {
-        if (!$this->horas->contains($hora)) {
-            $this->horas[] = $hora;
-            $hora->setDia($this);
-        }
-
-        return $this;
-    }
-
-    public function removeHora(Hora $hora): self
-    {
-        if ($this->horas->removeElement($hora)) {
-            // set the owning side to null (unless already changed)
-            if ($hora->getDia() === $this) {
-                $hora->setDia(null);
-            }
-        }
-
-        return $this;
-    }
-
     public function getUsuario(): ?User
     {
         return $this->usuario;
@@ -188,6 +156,36 @@ class Dia implements JsonSerializable
     public function setUsuario(?User $usuario): self
     {
         $this->usuario = $usuario;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Atividade>
+     */
+    public function getAtividades(): Collection
+    {
+        return $this->atividades;
+    }
+
+    public function addAtividade(Atividade $atividade): self
+    {
+        if (!$this->atividades->contains($atividade)) {
+            $this->atividades[] = $atividade;
+            $atividade->setDia($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAtividade(Atividade $atividade): self
+    {
+        if ($this->atividades->removeElement($atividade)) {
+            // set the owning side to null (unless already changed)
+            if ($atividade->getDia() === $this) {
+                $atividade->setDia(null);
+            }
+        }
 
         return $this;
     }

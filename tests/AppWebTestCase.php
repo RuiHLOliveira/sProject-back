@@ -5,8 +5,13 @@ namespace App\Tests;
 use App\Entity\Dia;
 use App\Entity\User;
 use DateTimeImmutable;
+use App\Entity\Atividade;
+use App\Entity\Configuracao;
+use App\Service\DiasService;
 use App\Entity\InvitationToken;
 use App\Repository\UserRepository;
+use App\Service\AtividadesService;
+use App\Service\ConfiguracoesService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -15,8 +20,27 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 class AppWebTestCase extends WebTestCase
 {
 
+    protected $httpClient;
+    protected $entityManager;
+    protected $authService;
+    protected $user;
     protected $token;
     protected $refreshToken;
+
+    /**
+     * @var ConfiguracoesService
+     */
+    protected $configuracoesService;
+
+    /**
+     * @var DiasService
+     */
+    protected $diasService;
+
+    /**
+     * @var AtividadesService
+     */
+    protected $atividadesService;
 
     protected function request($method, $uri, $data){
         $headers = [];
@@ -74,18 +98,28 @@ class AppWebTestCase extends WebTestCase
         return $json;
     }
 
-    protected function testerCreateNewDiaFromDataCompleta($dados =[]){
+    protected function testerCreateNewDiaFromDataCompleta($dados = []) : Dia
+    {
         $dataCompleta = isset($dados['dataCompleta']) ? $dados['dataCompleta'] : '2001-03-03';
         $dataCompleta = new DateTimeImmutable($dataCompleta);
-        return $this->diasService->createNewDiaFromDataCompleta($dataCompleta, $this->user);
+        $dia = $this->diasService->createNewDiaFromDataCompleta($dataCompleta, $this->user);
+        return $this->entityManager->getRepository(Dia::class)->findOneBy(['id' => $dia->getId(), 'usuario' => $this->user]);
     }
 
-    protected function testerCreateNewAtividade($dia, $hora, $dados =[]){
+    protected function testerCreateNewAtividade(int $dia, string $hora, array $dados = []) : Atividade
+    {
         $descricao = isset($dados['descricao']) ? $dados['descricao'] : 'descricao teste';
         
-        $atividade = $this->atividadesService->factoryAtividade($descricao, $hora->getId(), $this->user);
+        $atividade = $this->atividadesService->factoryAtividade($descricao, $dia, $hora, $this->user);
         $atividade = $this->atividadesService->createNewAtividade($atividade);
-        return $atividade;
+        return $this->entityManager->getRepository(Atividade::class)->findOneBy(['id' => $atividade->getId(), 'usuario' => $this->user]);
+    }
+
+    protected function testerCreateNewConfiguracao($dados = []): Configuracao
+    {
+        $configuracao = $this->configuracoesService->factoryConfiguracao(Configuracao::CHAVE_EXIBIR_DIA_SEMANA_HABIT_TRACKER, '1', $this->user);
+        $configuracao = $this->configuracoesService->createNewConfiguracao($configuracao);
+        return $this->entityManager->getRepository(Configuracao::class)->findOneBy(['id' => $configuracao->getId(), 'usuario' => $this->user]);
     }
 
 }

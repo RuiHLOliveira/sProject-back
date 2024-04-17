@@ -2,8 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\Dia;
-use App\Entity\Hora;
 use App\Service\DiasService;
 use DateTimeImmutable;
 use Doctrine\Persistence\ManagerRegistry;
@@ -17,7 +15,7 @@ class DiasController extends AbstractController
 {
 
     /**
-     * @var \App\Service\DiasService;
+     * @var DiasService
      */
     private $diasService;
 
@@ -29,7 +27,7 @@ class DiasController extends AbstractController
     /**
      * @Route("/dias", name="app_dias_list", methods={"GET","HEAD"})
      */
-    public function index(Request $request): JsonResponse
+    public function listaDias(Request $request): JsonResponse
     {
         try {
             $usuario = $this->getUser();
@@ -41,7 +39,7 @@ class DiasController extends AbstractController
                 $orderBy = [$orderBy[0] => $orderBy[1]];
             }
 
-            $dias = $this->diasService->index($usuario, $orderBy);
+            $dias = $this->diasService->listaDiasUseCase($usuario, $orderBy);
 
             return new JsonResponse($dias);
         } catch (\Exception $e) {

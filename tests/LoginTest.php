@@ -79,7 +79,7 @@ class LoginTest extends AppWebTestCase //webTestCase
         ];
         [$response, $json] = $this->request('POST','/auth/login', $data);
         $this->assertResponseStatusCodeSame(500);
-        $this->assertEquals($json->message, 'email was not sent.');
+        $this->assertEquals($json->message, 'E-mail não enviado.');
     }
 
     public function testNaoPodeLogarSemSenha(): void
@@ -89,7 +89,7 @@ class LoginTest extends AppWebTestCase //webTestCase
         ];
         [$response, $json] = $this->request('POST','/auth/login', $data);
         $this->assertResponseStatusCodeSame(500);
-        $this->assertEquals($json->message, 'password was not sent.');
+        $this->assertEquals($json->message, 'Senha não enviada.');
     }
     
     public function testNaoPodeLogarComEmailErrado(): void
@@ -100,7 +100,7 @@ class LoginTest extends AppWebTestCase //webTestCase
         ];
         [$response, $json] = $this->request('POST','/auth/login', $data);
         $this->assertResponseStatusCodeSame(400);
-        $this->assertEquals($json->message, 'email is wrong.');
+        $this->assertEquals($json->message, 'E-mail não existe.');
     }
     
     public function testNaoPodeLogarComSenhaErrada(): void
@@ -111,6 +111,6 @@ class LoginTest extends AppWebTestCase //webTestCase
         ];
         [$response, $json] = $this->request('POST','/auth/login', $data);
         $this->assertResponseStatusCodeSame(400);
-        $this->assertEquals($json->message, 'password is wrong.');
+        $this->assertEquals($json->message, 'Senha incorreta.');
     }
 }

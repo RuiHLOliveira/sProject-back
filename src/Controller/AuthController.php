@@ -31,25 +31,28 @@ class AuthController extends AbstractController
     }
 
     /**
+     * @Route("/auth/home", name="home", methods={"GET"})
+     */
+    public function home(Request $request)
+    {
+        return new Response(xdebug_info());
+    }
+    
+    /**
      * @Route("/auth/register", name="register", methods={"POST"})
      */
     public function register(Request $request)
     {
         try {
             
-            $requestData = $request->getContent();
-            $requestData = json_decode($requestData);
+            $requestContent = $request->getContent();
+            $requestData = json_decode($requestContent);
+            $this->validateRegister($requestData);
+
             $password = $requestData->password;
             $repeatPassword = $requestData->repeatPassword;
             $email = $requestData->email;
             $invitationToken = $requestData->invitationToken;
-
-            if($email == '') throw new BadRequestHttpException("email was not sent.");
-            if($password == '') throw new BadRequestHttpException("password was not sent.");
-            if($repeatPassword == '') throw new BadRequestHttpException("repeatPassword was not sent.");
-            if($password !== $repeatPassword) throw new BadRequestHttpException("Passwords must be equal.");
-            if($invitationToken == '') throw new BadRequestHttpException("Invitation Token was not sent.");
-
             
             $user = new User();
             $user->setPassword($password);
@@ -63,12 +66,26 @@ class AuthController extends AbstractController
         }
     }
 
+    private function validateRegister ($request)
+    {
+        $password = $request->password;
+        $repeatPassword = $request->repeatPassword;
+        $email = $request->email;
+        $invitationToken = $request->invitationToken;
+
+        if($email == '') throw new BadRequestHttpException("email was not sent.");
+        if($password == '') throw new BadRequestHttpException("password was not sent.");
+        if($repeatPassword == '') throw new BadRequestHttpException("repeatPassword was not sent.");
+        if($password !== $repeatPassword) throw new BadRequestHttpException("Passwords must be equal.");
+        if($invitationToken == '') throw new BadRequestHttpException("Invitation Token was not sent.");
+    }
+
     private function validateLoginData($requestData) {
         if( !property_exists($requestData, 'email') || $requestData->email == ''){
-            throw new BadRequestHttpException("email was not sent.");
+            throw new BadRequestHttpException("E-mail não enviado.");
         }
         if( !property_exists($requestData, 'password') || $requestData->password == ''){
-            throw new BadRequestHttpException("password was not sent.");
+            throw new BadRequestHttpException("Senha não enviada.");
         }
     }
 
@@ -89,14 +106,14 @@ class AuthController extends AbstractController
             //se não achar acusa erro
             if (!$user) {
                 return $this->json([
-                    'message' => 'email is wrong.',
+                    'message' => 'E-mail não existe.',
                 ], Response::HTTP_BAD_REQUEST);
             }
             
             //se não achar acusa erro
             if (!$encoder->isPasswordValid($user, $password)) {
                 return $this->json([
-                    'message' => 'password is wrong.',
+                    'message' => 'Senha incorreta.',
                 ], Response::HTTP_BAD_REQUEST);
             }
 
@@ -114,18 +131,17 @@ class AuthController extends AbstractController
 
     private function makeNewTokens(User $user) {
         
-        $payload1 = [
+        $payloadJwt = [
             "username" => $user->getUserIdentifier(),
             "exp"  => (new \DateTime())->modify("+50 seconds")->getTimestamp(),
         ];
-        $payload2 = [
+        $payloadRefresh = [
             "username" => $user->getUserIdentifier(),
             "exp"  => (new \DateTime())->modify("+600 minutes")->getTimestamp(),
         ];
 
-        $jwt = JWT::encode($payload1, $this->getParameter('jwt_secret'), 'HS256');
-
-        $refreshJwt = JWT::encode($payload2, $this->getParameter('refresh_jwt_secret'), 'HS256');
+        $jwt = JWT::encode($payloadJwt, $this->getParameter('jwt_secret'), 'HS256');
+        $refreshJwt = JWT::encode($payloadRefresh, $this->getParameter('refresh_jwt_secret'), 'HS256');
 
         return [
             'token' => sprintf('Bearer %s', $jwt),

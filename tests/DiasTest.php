@@ -3,20 +3,16 @@
 namespace App\Tests;
 
 use App\Entity\Dia;
-use App\Entity\Hora;
-use App\Entity\InvitationToken;
-use App\Entity\User;
-use DateTimeImmutable;
-use App\Repository\UserRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class DiasTest extends AppWebTestCase
 {
 
     protected $qtdHorasPrevistaNoDia = 17;
-
+    protected $user;
+    protected $authService;
+    protected $diasService;
+    
     /**
      * @var ManagerRegistry
      */
@@ -68,10 +64,6 @@ class DiasTest extends AppWebTestCase
 
         $this->assertResponseStatusCodeSame(200);
         $this->assertCount(count($dias), $json);
-
-        foreach ($json as $key => $dia) {
-            $this->assertCount($this->qtdHorasPrevistaNoDia, $dia->horas);
-        }
     }
 
     public function testCriarDia(): void
@@ -83,8 +75,5 @@ class DiasTest extends AppWebTestCase
         $diaDb = $this->entityManager->getRepository(Dia::class)->findOneBy(['id' => $json->id, 'usuario' => $this->user]);
         $this->assertNotNull($diaDb);
         $this->assertEquals($diaDb->getId(), $json->id);
-
-        $horas = $this->entityManager->getRepository(Hora::class)->findBy(['dia' => $json->id, 'usuario' => $this->user]);
-        $this->assertCount($this->qtdHorasPrevistaNoDia, $horas);
     }
 }

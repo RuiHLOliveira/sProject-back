@@ -2,21 +2,14 @@
 
 namespace App\Tests;
 
-use App\Entity\Dia;
-use App\Entity\Hora;
-use App\Entity\User;
-use DateTimeImmutable;
 use App\Entity\Atividade;
-use App\Entity\InvitationToken;
-use App\Repository\UserRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class AtividadesTest extends AppWebTestCase
 {
 
-    protected $qtdHorasPrevistaNoDia = 17;
+    protected $diasService;
+    protected $atividadesService;
 
     /**
      * @var ManagerRegistry
@@ -56,7 +49,7 @@ class AtividadesTest extends AppWebTestCase
     public function testNaoPodeListarAtividadeSemLogar(): void
     {
         $dados = [
-            'hora' => '1',
+            'dia' => '1',
             'descricao' => 'atividade1'
         ];
         [$response, $json] = $this->request('GET', '/atividades', $dados);
@@ -67,7 +60,7 @@ class AtividadesTest extends AppWebTestCase
     public function testPodeListarAtividadeSemLogar(): void
     {
         $dados = [
-            'hora' => '1',
+            'dia' => '1',
             'descricao' => 'atividade1'
         ];
         [$response, $json] = $this->request('GET', '/atividades', $dados);
@@ -78,7 +71,7 @@ class AtividadesTest extends AppWebTestCase
     public function testNaoPodeCriarAtividadeSemLogar(): void
     {
         $dados = [
-            'hora' => '1',
+            'dia' => '1',
             'descricao' => 'atividade1'
         ];
         [$response, $json] = $this->request('POST', '/atividades', $dados);
@@ -90,14 +83,11 @@ class AtividadesTest extends AppWebTestCase
     {
         $this->serviceLoggedInUser();
         $dia = $this->testerCreateNewDiaFromDataCompleta();
-
-        $dia = $this->entityManager->getRepository(Dia::class)->findOneBy(['id' => $dia->getId(), 'usuario' => $this->user]);
-        $horas = $this->entityManager->getRepository(Hora::class)->findBy(['dia' => $dia, 'usuario' => $this->user]);
-        $hora = $horas[0];
-        $horaId = $hora->getId();
+        $hora = $dia->getDataCompleta()->format('Y-m-d') . '12:00:00';
 
         $dados = [
-            'hora' => $horaId,
+            'dia' => $dia->getId(),
+            'hora' => $hora,
             'descricao' => 'atividade1'
         ];
         [$response, $json] = $this->request('POST', '/atividades', $dados);
@@ -113,21 +103,16 @@ class AtividadesTest extends AppWebTestCase
     {
         $this->serviceLoggedInUser();
         $dia = $this->testerCreateNewDiaFromDataCompleta();
-
-        $dia = $this->entityManager->getRepository(Dia::class)->findOneBy(['id' => $dia->getId(), 'usuario' => $this->user]);
-        $horas = $this->entityManager->getRepository(Hora::class)->findBy(['dia' => $dia, 'usuario' => $this->user]);
-        $hora = $horas[0];
-        $horaId = $hora->getId();
-
-
-        $atividade = $this->testerCreateNewAtividade($dia,$hora);
+        $hora = $dia->getDataCompleta()->format('Y-m-d') . ' 12:00:00';
+        $atividade = $this->testerCreateNewAtividade($dia->getId(), $hora);
 
         $atividadeId = $atividade->getId();
         $atividade->setDescricao('atividade1');
 
         $dados = [
-            'hora' => $horaId,
-            'descricao' => 'atividade1'
+            'dia' => $dia->getId(),
+            'descricao' => 'atividade1',
+            'hora' => $atividade->getHora()->format('H:i')
         ];
 
         [$response, $json] = $this->request('PUT', '/atividades/' . $atividadeId, $dados);
@@ -148,13 +133,8 @@ class AtividadesTest extends AppWebTestCase
     {
         $this->serviceLoggedInUser();
         $dia = $this->testerCreateNewDiaFromDataCompleta();
-
-        $dia = $this->entityManager->getRepository(Dia::class)->findOneBy(['id' => $dia->getId(), 'usuario' => $this->user]);
-        $horas = $this->entityManager->getRepository(Hora::class)->findBy(['dia' => $dia, 'usuario' => $this->user]);
-        $hora = $horas[0];
-
-        $atividade = $this->testerCreateNewAtividade($dia, $hora);
-
+        $hora = $dia->getDataCompleta()->format('Y-m-d') . ' 12:00:00';
+        $atividade = $this->testerCreateNewAtividade($dia->getId(), $hora);
         $atividadeId = $atividade->getId();
 
         [$response, $json] = $this->request('POST', '/atividades/' . $atividadeId . '/concluir', []);
@@ -177,12 +157,8 @@ class AtividadesTest extends AppWebTestCase
     {
         $this->serviceLoggedInUser();
         $dia = $this->testerCreateNewDiaFromDataCompleta();
-
-        $dia = $this->entityManager->getRepository(Dia::class)->findOneBy(['id' => $dia->getId(), 'usuario' => $this->user]);
-        $horas = $this->entityManager->getRepository(Hora::class)->findBy(['dia' => $dia, 'usuario' => $this->user]);
-        $hora = $horas[0];
-
-        $atividade = $this->testerCreateNewAtividade($dia, $hora);
+        $hora = $dia->getDataCompleta()->format('Y-m-d') . ' 12:00:00';
+        $atividade = $this->testerCreateNewAtividade($dia->getId(), $hora);
 
         $atividadeId = $atividade->getId();
 

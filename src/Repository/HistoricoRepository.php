@@ -2,26 +2,26 @@
 
 namespace App\Repository;
 
-use App\Entity\Hora;
+use App\Entity\Historico;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Hora>
+ * @extends ServiceEntityRepository<Historico>
  *
- * @method Hora|null find($id, $lockMode = null, $lockVersion = null)
- * @method Hora|null findOneBy(array $criteria, array $orderBy = null)
- * @method Hora[]    findAll()
- * @method Hora[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Historico|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Historico|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Historico[]    findAll()
+ * @method Historico[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class HoraRepository extends ServiceEntityRepository
+class HistoricoRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Hora::class);
+        parent::__construct($registry, Historico::class);
     }
 
-    public function add(Hora $entity, bool $flush = false): void
+    public function add(Historico $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
 
@@ -30,7 +30,7 @@ class HoraRepository extends ServiceEntityRepository
         }
     }
 
-    public function remove(Hora $entity, bool $flush = false): void
+    public function remove(Historico $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
 
@@ -40,7 +40,7 @@ class HoraRepository extends ServiceEntityRepository
     }
 
 //    /**
-//     * @return Hora[] Returns an array of Hora objects
+//     * @return Historico[] Returns an array of Historico objects
 //     */
 //    public function findByExampleField($value): array
 //    {
@@ -54,7 +54,7 @@ class HoraRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?Hora
+//    public function findOneBySomeField($value): ?Historico
 //    {
 //        return $this->createQueryBuilder('h')
 //            ->andWhere('h.exampleField = :val')

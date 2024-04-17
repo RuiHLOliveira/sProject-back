@@ -2,15 +2,17 @@
 
 namespace App\Entity;
 
+use DateTime;
+use Exception;
 use JsonSerializable;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\AtividadeRepository;
-use Exception;
 
 /**
  * @ORM\Entity(repositoryClass=AtividadeRepository::class)
  */
-class Atividade implements JsonSerializable
+class Atividade extends JsonSerializableEntity
 {
 
     const SITUACAO_PENDENTE = 0;
@@ -26,16 +28,11 @@ class Atividade implements JsonSerializable
     public function jsonSerialize()
     {
         $this->fillSituacaoDescritivo();
-        $array = [
-            'id' => $this->getId(),
-            'descricao' => $this->getDescricao(),
-            'situacao' => $this->getSituacao(),
-            'situacaoDescritivo' => $this->getSituacaoDescritivo(),
-            'createdAt' => $this->getCreatedAt(),
-            'updatedAt' => $this->getUpdatedAt(),
-            'deletedAt' => $this->getDeletedAt(),
-        ];
-
+        $array = parent::jsonSerialize();
+        $array['descricao'] = $this->getDescricao();
+        $array['situacao'] = $this->getSituacao();
+        $array['situacaoDescritivo'] = $this->getSituacaoDescritivo();
+        $array['hora'] = $this->getHora()->format('H:i');
         return $array;
     }
 
@@ -73,46 +70,51 @@ class Atividade implements JsonSerializable
      * @ORM\GeneratedValue(strategy="IDENTITY")
      * @ORM\Column(type="integer")
      */
-    private $id;
+    protected $id;
 
     /**
      * @ORM\Column(type="text")
      */
-    private $descricao;
-
-    /**
-     * @ORM\ManyToOne(targetEntity=Hora::class, inversedBy="atividades")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $hora;
+    protected $descricao;
 
     /**
      * @ORM\Column(type="datetime_immutable")
      */
-    private $created_at;
+    protected $hora;
+
+    /**
+     * @ORM\Column(type="datetime_immutable")
+     */
+    protected $created_at;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
-    private $updated_at;
+    protected $updated_at;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
-    private $deleted_at;
+    protected $deleted_at;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="atividades")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $usuario;
+    protected $usuario;
 
     /**
      * @ORM\Column(type="integer")
      */
-    private $situacao;
+    protected $situacao;
 
-    private $situacaoDescritivo;
+    protected $situacaoDescritivo;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Dia::class, inversedBy="atividades")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $dia;
 
     public function getId(): ?int
     {
@@ -131,12 +133,12 @@ class Atividade implements JsonSerializable
         return $this;
     }
 
-    public function getHora(): ?Hora
+    public function getHora(): ?DateTimeImmutable
     {
         return $this->hora;
     }
 
-    public function setHora(?Hora $hora): self
+    public function setHora(?DateTimeImmutable $hora): self
     {
         $this->hora = $hora;
 
@@ -212,6 +214,18 @@ class Atividade implements JsonSerializable
     public function setSituacaoDescritivo(string $situacaoDescritivo): self
     {
         $this->situacaoDescritivo = $situacaoDescritivo;
+        return $this;
+    }
+
+    public function getDia(): ?Dia
+    {
+        return $this->dia;
+    }
+
+    public function setDia(?Dia $dia): self
+    {
+        $this->dia = $dia;
+
         return $this;
     }
 }

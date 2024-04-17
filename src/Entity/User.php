@@ -51,11 +51,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
     private $password;
 
     /**
-     * @ORM\OneToMany(targetEntity=Hora::class, mappedBy="usuario")
-     */
-    private $horas;
-
-    /**
      * @ORM\OneToMany(targetEntity=Dia::class, mappedBy="usuario")
      */
     private $dias;
@@ -65,11 +60,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
      */
     private $atividades;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Configuracao::class, mappedBy="usuario")
+     */
+    private $configuracoes;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Historico::class, mappedBy="usuario")
+     */
+    private $historicos;
+
     public function __construct()
     {
-        $this->horas = new ArrayCollection();
         $this->dias = new ArrayCollection();
         $this->atividades = new ArrayCollection();
+        $this->configuracoes = new ArrayCollection();
+        $this->historicos = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -162,36 +168,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
     }
 
     /**
-     * @return Collection<int, Hora>
-     */
-    public function getHoras(): Collection
-    {
-        return $this->horas;
-    }
-
-    public function addHora(Hora $hora): self
-    {
-        if (!$this->horas->contains($hora)) {
-            $this->horas[] = $hora;
-            $hora->setUsuario($this);
-        }
-
-        return $this;
-    }
-
-    public function removeHora(Hora $hora): self
-    {
-        if ($this->horas->removeElement($hora)) {
-            // set the owning side to null (unless already changed)
-            if ($hora->getUsuario() === $this) {
-                $hora->setUsuario(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
      * @return Collection<int, Dia>
      */
     public function getDias(): Collection
@@ -245,6 +221,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
             // set the owning side to null (unless already changed)
             if ($atividade->getUsuario() === $this) {
                 $atividade->setUsuario(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Configuracao>
+     */
+    public function getConfiguracoes(): Collection
+    {
+        return $this->configuracoes;
+    }
+
+    public function addConfiguraco(Configuracao $configuraco): self
+    {
+        if (!$this->configuracoes->contains($configuraco)) {
+            $this->configuracoes[] = $configuraco;
+            $configuraco->setUsuario($this);
+        }
+
+        return $this;
+    }
+
+    public function removeConfiguraco(Configuracao $configuraco): self
+    {
+        if ($this->configuracoes->removeElement($configuraco)) {
+            // set the owning side to null (unless already changed)
+            if ($configuraco->getUsuario() === $this) {
+                $configuraco->setUsuario(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Historico>
+     */
+    public function getHistoricos(): Collection
+    {
+        return $this->historicos;
+    }
+
+    public function addHistorico(Historico $historico): self
+    {
+        if (!$this->historicos->contains($historico)) {
+            $this->historicos[] = $historico;
+            $historico->setUsuario($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHistorico(Historico $historico): self
+    {
+        if ($this->historicos->removeElement($historico)) {
+            // set the owning side to null (unless already changed)
+            if ($historico->getUsuario() === $this) {
+                $historico->setUsuario(null);
             }
         }
 

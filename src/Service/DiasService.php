@@ -3,36 +3,40 @@
 namespace App\Service;
 
 use App\Entity\Dia;
-use App\Entity\Dias;
-use App\Entity\Hora;
 use App\Entity\User;
 use DateTimeImmutable;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class DiasService
 {
-    
     private $doctrine;
-    private $encoder;
 
-    public function __construct(ManagerRegistry $doctrine,  UserPasswordEncoderInterface $encoder)
+    public function __construct(ManagerRegistry $doctrine)
     {
         $this->doctrine = $doctrine;
-        $this->encoder = $encoder;
     }
 
-    public function index(User $usuario, array $orderBy = null) {
+    /**
+     * @param User $usuario
+     * @param array $orderBy
+     * @return array
+     */
+    public function findAll(User $usuario, array $orderBy = null): array
+    {
+        $filter = [];
+        $filter['usuario'] = $usuario;
+        return $this->doctrine->getRepository(Dia::class)->findBy($filter, $orderBy);
+    }
 
+    /**
+     * @param User $usuario
+     * @param array $orderBy
+     * @return array<Dia>
+     */
+    public function listaDiasUseCase(User $usuario, array $orderBy = null) : array
+    {
         try {
-            $dias = $this->doctrine->getRepository(Dia::class)->findBy(['usuario' => $usuario], $orderBy);
-
-            foreach($dias as $key => $dia) {
-                $dias[$key]->serializarHoras();
-                $dias[$key]->serializarAtividades();
-            }
-
+            $dias = $this->findAll($usuario, $orderBy);
             return $dias;
         } catch (\Exception $e) {
             throw $e;
@@ -51,17 +55,6 @@ class DiasService
             $dia->setUsuario($usuario);
             
             $entityManager->persist($dia);
-            // $entityManager->flush();
-
-            for ($i=6; $i < 23; $i++) { 
-                $hora = new Hora();
-                $hora->setHora($i);
-                $hora->setDia($dia);
-                $hora->setUsuario($dia->getUsuario());
-                $hora->setCreatedAt(new DateTimeImmutable());
-                $entityManager->persist($hora);
-            }
-
             $entityManager->flush();
 
             $entityManager->getConnection()->commit();

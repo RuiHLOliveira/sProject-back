@@ -10,6 +10,7 @@
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
+/db-data/
 
 ###> symfony/phpunit-bridge ###
 .phpunit.result.cache
