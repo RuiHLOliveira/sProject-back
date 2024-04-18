@@ -51,14 +51,8 @@ class BackupController extends AbstractController
     {
         try {
             $usuario = $this->getUser();
-
-            $projetos = $this->projetosService->findAll($usuario, [], ['situacao'=>'asc','prioridade' => 'asc']);
-            // $projetos = $doctrine->getRepository(Projeto::class)->findBy([
-            //     'usuario' => $usuario
-            // ]);
-
             $arquivoTxt = '';
-
+            $projetos = $this->projetosService->findAll($usuario, [], ['situacao'=>'asc','prioridade' => 'asc']);
             /**
              * @var Projeto $projeto
              */
@@ -71,16 +65,14 @@ class BackupController extends AbstractController
                 $projeto->fillPrioridadeDescritivo();
 
                 $arquivoTxt .= "Projeto: ".$projeto->getNome()."\n";
-                $arquivoTxt .= "Anotações : ".$projeto->getAnotacoes()."\n";
-                $arquivoTxt .= "Situacao : ".$projeto->getSituacao().'-'.$projeto->getSituacaoDescritivo()."\n";
-                $arquivoTxt .= "Prioridade : ".$projeto->getPrioridade().'-'.$projeto->getPrioridadeDescritivo()."\n";
-                $arquivoTxt .= "Data Prazo : ".$dataPrazo."\n";
-                $arquivoTxt .= "CreatedAt : ".$createdAt."\n";
-                $arquivoTxt .= "UpdatedAt : ".$updatedAt."\n";
-                $arquivoTxt .= "DeletedAt : ".$deletedAt."\n";
-
+                $arquivoTxt .= "Anotações: ".$projeto->getAnotacoes()."\n";
+                $arquivoTxt .= "Situacao: ".$projeto->getSituacao().'-'.$projeto->getSituacaoDescritivo()."\n";
+                $arquivoTxt .= "Prioridade: ".$projeto->getPrioridade().'-'.$projeto->getPrioridadeDescritivo()."\n";
+                $arquivoTxt .= "Data Prazo: ".$dataPrazo."\n";
+                $arquivoTxt .= "Criado em: ".$createdAt."\n";
+                $arquivoTxt .= "Ultima att: ".$updatedAt."\n";
                 $arquivoTxt .= "*******************\n";
-                $arquivoTxt .= "Tarefas : \n";
+                $arquivoTxt .= "Tarefas: \n";
                 /**
                  * @var Tarefa $tarefa
                  */
@@ -89,8 +81,8 @@ class BackupController extends AbstractController
                     $hora = !is_null($tarefa->getHora()) ? $tarefa->getHora()->format('d/m/Y H:i:s') : '-';
                     $tarefa->fillSituacaoDescritivo();
                     $arquivoTxt .= "Descricao: ".$tarefa->getDescricao()."\n";
-                    $arquivoTxt .= "Situacao : ".$tarefa->getSituacao().'-'.$tarefa->getSituacaoDescritivo()."\n";
-                    $arquivoTxt .= "Hora : ".$hora."\n";
+                    $arquivoTxt .= "Situacao: ".$tarefa->getSituacao().'-'.$tarefa->getSituacaoDescritivo()."\n";
+                    $arquivoTxt .= "Hora: ".$hora."\n";
                     // $arquivoTxt .= "CreatedAt : ".$createdAt."\n";
                     // $arquivoTxt .= "UpdatedAt : ".$updatedAt."\n";
                     // $arquivoTxt .= "DeletedAt : ".$deletedAt."\n";
@@ -98,7 +90,7 @@ class BackupController extends AbstractController
 
                 $historicos = $this->historicosService->findAll($usuario, ['moduloId'=>$projeto->getId()], ['createdAt'=>'desc']);
                 $arquivoTxt .= "*******************\n";
-                $arquivoTxt .= "Historicos : \n";
+                $arquivoTxt .= "Historicos: \n";
                 /**
                  * @var Historico $historico
                  */
@@ -106,7 +98,7 @@ class BackupController extends AbstractController
                     if($key > 0 && $key < count($historicos)) $arquivoTxt .= "-------------\n";
                     $createdAt = !is_null($historico->getCreatedAt()) ? $historico->getCreatedAt()->format('d/m/Y H:i:s') : '-';
                     $arquivoTxt .= "Descricao: ".$historico->getDescricao()."\n";
-                    $arquivoTxt .= "Hora : ".$createdAt."\n";
+                    $arquivoTxt .= "Hora: ".$createdAt."\n";
                     // $arquivoTxt .= "CreatedAt : ".$createdAt."\n";
                     // $arquivoTxt .= "UpdatedAt : ".$updatedAt."\n";
                     // $arquivoTxt .= "DeletedAt : ".$deletedAt."\n";
@@ -129,9 +121,7 @@ class BackupController extends AbstractController
         try {
             $usuario = $this->getUser();
 
-            $projetos = $doctrine->getRepository(Projeto::class)->findBy([
-                'usuario' => $usuario
-            ]);
+            $projetos = $this->projetosService->findAll($usuario, [], []);
 
             foreach($projetos as $key => $projeto) {
                 $projetos[$key]->serializarTarefas();
@@ -174,21 +164,19 @@ class BackupController extends AbstractController
             ]);
 
             foreach ($projetos as $key => $projeto) {
-                // foreach ($dia->getHoras() as $key => $hora) {
-                    foreach ($projeto->getTarefas() as $key => $tarefa){
-                        $entityManager->remove($tarefa);
-                    }
-                    $entityManager->remove($projeto);
-                // }
+                foreach ($projeto->getTarefas() as $key => $tarefa){
+                    $entityManager->remove($tarefa);
+                }
                 $entityManager->remove($projeto);
             }
-            // $entityManager->flush();
 
             foreach ($requestData->projetos as $key => $projeto) {
                 //$projeto['name'] .= ' bkp'; //padrão backup
                 $projetoObj = new Projeto();
                 $projetoObj->setNome($projeto->nome);
                 $projetoObj->setAnotacoes($projeto->anotacoes);
+                $projetoObj->setSituacao($projeto->situacao);
+                $projetoObj->setPrioridade($projeto->prioridade);
                 $projetoObj->setDataPrazo(new DateTimeImmutable($projeto->dataPrazo));
                 // created at
                 $timezone = new DateTimeZone($projeto->createdAt->timezone);
