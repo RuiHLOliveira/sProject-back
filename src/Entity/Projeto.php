@@ -42,7 +42,6 @@ class Projeto implements JsonSerializable
     const SITUACAO_PAUSADO_INDEFINIDAMENTE = 3;
     const SITUACAO_CONCLUIDO = 4;
 
-
     const DESCRITIVOS_SITUACAO = [
         self::SITUACAO_PENDENTE => 'pendente',
         self::SITUACAO_AGUARDANDO_RESPOSTA => 'aguardando resposta',
@@ -62,6 +61,14 @@ class Projeto implements JsonSerializable
         self::PRIORIDADE_MEDIA => 'Média',
         self::PRIORIDADE_BAIXA => 'Baixa',
         self::PRIORIDADE_BAIXISSIMA => 'Baixíssima',
+    ];
+
+    const LISTA_PRIORIDADES = [
+        self::PRIORIDADE_URGENTE,
+        self::PRIORIDADE_ALTA,
+        self::PRIORIDADE_MEDIA,
+        self::PRIORIDADE_BAIXA,
+        self::PRIORIDADE_BAIXISSIMA,
     ];
 
     private $serializarTarefas;
@@ -99,7 +106,7 @@ class Projeto implements JsonSerializable
     private $id;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="datetime", nullable=true)
      */
     private $dataPrazo;
 

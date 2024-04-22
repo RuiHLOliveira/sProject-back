@@ -53,6 +53,13 @@ class ProjetosController extends AbstractController
 
             $projetos = $this->projetosService->listaProjetosUseCase($usuario, $filters, $orderBy);
 
+            $loadTarefas = $request->query->get('loadTarefas');
+            if(filter_var($loadTarefas, FILTER_VALIDATE_BOOLEAN)) {
+                for ($i=0; $i < count($projetos); $i++) {
+                    $projetos[$i]->serializarTarefas();
+                }
+            }
+
             return new JsonResponse($projetos);
         } catch (\Exception $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -63,11 +70,17 @@ class ProjetosController extends AbstractController
 
     private function validateCreate($request)
     {
-        if($request->nome == null || $request->nome == ''){
-            throw new Exception('Nome não pode ser vazio');
+        if(!property_exists($request, 'nome') || $request->nome == null || $request->nome == ''){
+            throw new Exception('Nome não pode ser vazio.');
         }
-        if($request->anotacoes == null || $request->anotacoes == ''){
-            throw new Exception('Anotações não pode ser vazio');
+        if(!property_exists($request, 'anotacoes') || $request->anotacoes == null || $request->anotacoes == ''){
+            throw new Exception('Anotações não pode ser vazio.');
+        }
+        if(!property_exists($request, 'prioridade') || $request->prioridade == null || $request->prioridade == ''){
+            throw new Exception('Prioridade não pode ser vazio.');
+        }
+        if(!in_array($request->prioridade, Projeto::LISTA_PRIORIDADES)){
+            throw new Exception('Prioridade não suportada.');
         }
     }
 
@@ -83,7 +96,12 @@ class ProjetosController extends AbstractController
 
             $this->validateCreate($requestObj);
             
-            $projeto = $this->projetosService->factoryCreateProjetoUsecase($requestObj->nome, $requestObj->anotacoes, $requestObj->dataPrazo);
+            $projeto = $this->projetosService->factoryCreateProjetoUsecase(
+                $requestObj->nome,
+                $requestObj->anotacoes,
+                $requestObj->dataPrazo,
+                $requestObj->prioridade
+            );
 
             $projeto = $this->projetosService->createProjetoUsecase($projeto, $usuario);
 

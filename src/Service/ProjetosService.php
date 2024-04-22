@@ -62,7 +62,7 @@ class ProjetosService
     }
 
 
-    public function factoryCreateProjetoUsecase($nome, $anotacoes, $dataPrazo)
+    public function factoryCreateProjetoUsecase($nome, $anotacoes, $dataPrazo, $prioridade = Projeto::PRIORIDADE_BAIXISSIMA)
     {
         $projeto = new Projeto();
         if($dataPrazo != null && $dataPrazo != '') {
@@ -72,7 +72,7 @@ class ProjetosService
         $projeto->setNome($nome);
         $projeto->setAnotacoes($anotacoes);
         $projeto->setSituacao(Projeto::SITUACAO_PENDENTE);
-        $projeto->setPrioridade(Projeto::PRIORIDADE_BAIXISSIMA);
+        $projeto->setPrioridade($prioridade);
         return $projeto;
     }
 
