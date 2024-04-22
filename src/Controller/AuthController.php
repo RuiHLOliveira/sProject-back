@@ -18,8 +18,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
-use function PHPUnit\Framework\objectHasAttribute;
-
 class AuthController extends AbstractController
 {
 
@@ -31,13 +29,21 @@ class AuthController extends AbstractController
     }
 
     /**
+     * @Route("/auth/ping", name="auth_ping", methods={"GET"})
+     */
+    public function ping(Request $request)
+    {
+        return new Response('pong');
+    }
+
+    /**
      * @Route("/auth/home", name="home", methods={"GET"})
      */
     public function home(Request $request)
     {
         return new Response(xdebug_info());
     }
-    
+
     /**
      * @Route("/auth/register", name="register", methods={"POST"})
      */
