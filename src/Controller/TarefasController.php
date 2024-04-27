@@ -73,9 +73,9 @@ class TarefasController extends AbstractController
         if( !property_exists($requestData, 'projeto') || $requestData->projeto == ''){
             throw new BadRequestHttpException("Projeto não enviado.");
         }
-        if( !property_exists($requestData, 'hora') || $requestData->hora == ''){
-            throw new BadRequestHttpException("Hora não enviada.");
-        }
+        // if( !property_exists($requestData, 'hora') || $requestData->hora == ''){
+        //     throw new BadRequestHttpException("Hora não enviada.");
+        // }
     }
 
     /**
@@ -100,9 +100,9 @@ class TarefasController extends AbstractController
         if( !property_exists($requestData, 'descricao') || $requestData->descricao == ''){
             throw new BadRequestHttpException("Descrição não enviada.");
         }
-        if( !property_exists($requestData, 'hora') || $requestData->hora == ''){
-            throw new BadRequestHttpException("Hora não enviada.");
-        }
+        // if( !property_exists($requestData, 'hora') || $requestData->hora == ''){
+        //     throw new BadRequestHttpException("Hora não enviada.");
+        // }
     }
 
     /**
@@ -121,7 +121,9 @@ class TarefasController extends AbstractController
             }
 
             $tarefa->setDescricao($requestData->descricao);
-            $tarefa->setHora(new DateTimeImmutable($requestData->hora));
+            if($requestData->hora != '') {
+                $tarefa->setHora(new DateTimeImmutable($requestData->hora));
+            }
             $this->tarefasService->atualizaTarefasUseCase($tarefa);
 
             return new JsonResponse();

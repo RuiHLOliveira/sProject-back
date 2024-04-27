@@ -104,7 +104,10 @@ class TarefasService
         $tarefa->setDescricao($descricao);
         $tarefa->setSituacao(0);
         $tarefa->setProjeto($projeto);
-        $tarefa->setHora(new DateTimeImmutable($hora));
+        if($hora != ''){
+            $tarefa->setHora(new DateTimeImmutable($hora));
+        }
+        
         
         return $tarefa;
     }

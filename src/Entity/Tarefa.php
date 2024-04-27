@@ -32,7 +32,7 @@ class Tarefa extends JsonSerializableEntity
         $array['descricao'] = $this->getDescricao();
         $array['situacao'] = $this->getSituacao();
         $array['situacaoDescritivo'] = $this->getSituacaoDescritivo();
-        $array['hora'] = $this->getHora()->format('H:i');
+        $array['hora'] = $this->getHora() != null ? $this->getHora()->format('H:i') : null;
         return $array;
     }
 
@@ -53,7 +53,7 @@ class Tarefa extends JsonSerializableEntity
     protected $descricao;
 
     /**
-     * @ORM\Column(type="datetime_immutable")
+     * @ORM\Column(type="datetime_immutable", nullable=true)
      */
     protected $hora;
 
