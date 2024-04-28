@@ -40,6 +40,19 @@ class Tarefa extends JsonSerializableEntity
         $this->setSituacaoDescritivo(self::DESCRITIVOS_SITUACAO[$this->getSituacao()]);
     }
 
+    public function concluir() {
+        if($this->situacao !== self::SITUACAO_PENDENTE)
+            throw new Exception("Não é possível concluir uma tarefa que não está pendente.");
+        $this->situacao = self::SITUACAO_CONCLUIDO;
+        return $this;
+    }
+
+    public function falhar() {
+        if($this->situacao !== self::SITUACAO_PENDENTE)
+            throw new Exception("Não é possível concluir uma tarefa que não está pendente.");
+        $this->situacao = self::SITUACAO_FALHA;
+        return $this;
+    }
     /**
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
