@@ -11,7 +11,10 @@ use DateTimeImmutable;
 use App\Entity\Projeto;
 use App\Entity\Notebook;
 use App\Entity\Atividade;
+use App\Entity\Habito;
+use App\Entity\HabitoRealizado;
 use App\Entity\Historico;
+use App\Service\HabitosService;
 use App\Service\ProjetosService;
 use App\Service\HistoricosService;
 use Doctrine\Persistence\ManagerRegistry;
@@ -32,16 +35,23 @@ class BackupController extends AbstractController
     private $projetosService;
 
     /**
+     * @var HabitosService $habitosService
+     */
+    private $habitosService;
+
+    /**
      * @var HistoricosService $historicosService
      */
     private $historicosService;
 
     public function __construct(
         ProjetosService $projetosService,
-        HistoricosService $historicosService
+        HistoricosService $historicosService,
+        HabitosService $habitosService
     ) {
         $this->projetosService = $projetosService;
         $this->historicosService = $historicosService;
+        $this->habitosService = $habitosService;
     }
 
     /**
@@ -53,6 +63,7 @@ class BackupController extends AbstractController
             $usuario = $this->getUser();
             $arquivoTxt = '';
             $projetos = $this->projetosService->findAll($usuario, [], ['situacao'=>'asc','prioridade' => 'asc']);
+            $habitos = $this->habitosService->findAll($usuario, [], []);
             /**
              * @var Projeto $projeto
              */
@@ -107,6 +118,35 @@ class BackupController extends AbstractController
                 $arquivoTxt .= "\n\n\n";
             }
 
+            /**
+             * @var Habito $habito
+             */
+            foreach($habitos as $key => $habito) {
+                $hora = !is_null($habito->getHora()) ? $habito->getHora()->format('H:i') : '-';
+                $createdAt = !is_null($habito->getCreatedAt()) ? $habito->getCreatedAt()->format('d/m/Y H:i:s') : '-';
+                $updatedAt = !is_null($habito->getUpdatedAt()) ? $habito->getUpdatedAt()->format('d/m/Y H:i:s') : '-';
+                $deletedAt = !is_null($habito->getDeletedAt()) ? $habito->getDeletedAt()->format('d/m/Y H:i:s') : '-';
+                $arquivoTxt .= "Habito: ".$habito->getDescricao()."\n";
+                $arquivoTxt .= "Hora: ".$hora."\n";
+                $arquivoTxt .= "Criado em: ".$createdAt."\n";
+                $arquivoTxt .= "Ultima att: ".$updatedAt."\n";
+                $arquivoTxt .= "*******************\n";
+                $arquivoTxt .= "Realizado Em: \n";
+                /**
+                 * @var HabitoRealizado $habitoRealizado
+                 */
+                foreach ($habito->getHabitoRealizados() as $key => $habitoRealizado) {
+                    if($key > 0 && $key < count($habito->getHabitoRealizados())) $arquivoTxt .= "-------------\n";
+                    $realizadoEm = $habitoRealizado->getRealizadoEm()->format('d/m/Y H:i:s');
+                    $arquivoTxt .= "dia: ".$realizadoEm."\n";
+                    // $arquivoTxt .= "CreatedAt : ".$createdAt."\n";
+                    // $arquivoTxt .= "UpdatedAt : ".$updatedAt."\n";
+                    // $arquivoTxt .= "DeletedAt : ".$deletedAt."\n";
+                }
+                $arquivoTxt .= "*******************\n";
+                $arquivoTxt .= "\n\n\n";
+            }
+
             return new JsonResponse(compact('arquivoTxt'), 200);
         } catch (\Exception $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -127,7 +167,12 @@ class BackupController extends AbstractController
                 $projetos[$key]->serializarTarefas();
             }
 
-            return new JsonResponse(compact('projetos'), 200);
+            $habitos = $this->habitosService->findAll($usuario);
+            foreach($habitos as $key => $habito) {
+                $habitos[$key]->serializarHabitoRealizados();
+            }
+
+            return new JsonResponse(compact('projetos', 'habitos'), 200);
         } catch (\Exception $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -162,12 +207,21 @@ class BackupController extends AbstractController
             $projetos = $doctrine->getRepository(Projeto::class)->findBy([
                 'usuario' => $usuario
             ]);
-
             foreach ($projetos as $key => $projeto) {
                 foreach ($projeto->getTarefas() as $key => $tarefa){
                     $entityManager->remove($tarefa);
                 }
                 $entityManager->remove($projeto);
+            }
+
+            $habitos = $doctrine->getRepository(Habito::class)->findBy([
+                'usuario' => $usuario
+            ]);
+            foreach ($habitos as $key => $habito) {
+                foreach ($habito->getHabitoRealizados() as $key => $realizado){
+                    $entityManager->remove($realizado);
+                }
+                $entityManager->remove($habito);
             }
 
             foreach ($requestData->projetos as $key => $projeto) {
@@ -238,6 +292,66 @@ class BackupController extends AbstractController
                 // persist todas tarefas
                 $entityManager->flush();
             }
+
+            foreach ($requestData->habitos as $key => $habito) {
+                $habitoObj = new Habito();
+                $habitoObj->setDescricao($habito->descricao);
+                $habitoObj->setSituacao($habito->situacao);
+                // created at
+                $timezone = new DateTimeZone($habito->createdAt->timezone);
+                $hora = new DateTimeImmutable($habito->hora, $timezone);
+                $habitoObj->setHora($hora);
+                $createdAt = new DateTimeImmutable($habito->createdAt->date, $timezone);
+                $habitoObj->setCreatedAt($createdAt);
+                // updated at
+                if($habito->updatedAt != null) {
+                    $timezone = new DateTimeZone($habito->updatedAt->timezone);
+                    $updatedAt = new DateTimeImmutable($habito->updatedAt->date, $timezone);
+                    $habitoObj->setUpdatedAt($updatedAt);
+                }
+                // deleted at
+                if($habito->deletedAt != null) {
+                    $timezone = new DateTimeZone($habito->deletedAt->timezone);
+                    $deletedAt = new DateTimeImmutable($habito->deletedAt->date, $timezone);
+                    $habitoObj->setDeletedAt($deletedAt);
+                }
+                // usuario
+                $habitoObj->setUsuario($usuario);
+                // persist
+                $entityManager->persist($habitoObj);
+                $habitoObj->getId();
+
+                foreach($habito->habitoRealizados as $key => $realizado) {
+                    $realizadoObj = new HabitoRealizado();
+                    $timezone = new DateTimeZone($realizado->createdAt->timezone);
+                    //realizadoEm
+                    $realizadoEm = new DateTimeImmutable($realizado->realizadoEm, $timezone);
+                    $realizadoObj->setRealizadoEm($realizadoEm);
+                    // created at
+                    $createdAt = new DateTimeImmutable($realizado->createdAt->date, $timezone);
+                    $realizadoObj->setCreatedAt($createdAt);
+                    // updated at
+                    if($realizado->updatedAt != null) {
+                        $timezone = new DateTimeZone($realizado->updatedAt->timezone);
+                        $updatedAt = new DateTimeImmutable($realizado->updatedAt->date, $timezone);
+                        $realizadoObj->setUpdatedAt($updatedAt);
+                    }
+                    // deleted at
+                    if($realizado->deletedAt != null) {
+                        $timezone = new DateTimeZone($realizado->deletedAt->timezone);
+                        $deletedAt = new DateTimeImmutable($realizado->deletedAt->date, $timezone);
+                        $realizadoObj->setDeletedAt($deletedAt);
+                    }
+                    //usuario / habito
+                    $realizadoObj->setUsuario($usuario);
+                    $realizadoObj->setHabito($habitoObj);
+                    // persist
+                    $entityManager->persist($realizadoObj);
+                    $realizadoObj->getId();
+                }
+                $entityManager->flush();
+            }
+
             $entityManager->getConnection()->commit();
             $mensagem = "Backup successfully restored";
             return new JsonResponse(compact('mensagem'), 200);
