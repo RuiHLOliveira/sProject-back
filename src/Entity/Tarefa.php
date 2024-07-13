@@ -14,7 +14,6 @@ use App\Repository\TarefaRepository;
  */
 class Tarefa extends JsonSerializableEntity
 {
-
     const SITUACAO_PENDENTE = 0;
     const SITUACAO_CONCLUIDO = 1;
     const SITUACAO_FALHA = 2;
@@ -33,7 +32,21 @@ class Tarefa extends JsonSerializableEntity
         $array['situacao'] = $this->getSituacao();
         $array['situacaoDescritivo'] = $this->getSituacaoDescritivo();
         $array['hora'] = $this->getHora() != null ? $this->getHora()->format('H:i') : null;
+
+        if(!$this->serializarProjeto) {
+            $array['projeto'] = $this->getProjeto()->getId();
+        } else if($this->serializarProjeto) {
+            $array['projeto'] = $this->getProjeto();
+        }
+
         return $array;
+    }
+
+    protected $serializarProjeto;
+
+    public function serializarProjeto() {
+        // $this->getProjeto();
+        $this->serializarProjeto = true;
     }
 
     public function fillSituacaoDescritivo(){

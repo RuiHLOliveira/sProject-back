@@ -47,6 +47,16 @@ class TarefasController extends AbstractController
         return $orderBy;
     }
 
+    private function getProperties(Request $request)
+    {
+        $properties = explode(',',$request->query->get('properties'));
+        foreach($properties as $key => $value) {
+            $properties[$value] = true;
+            unset($properties[$key]);
+        }
+        return $properties;
+    }
+
     /**
      * @Route("/tarefas", name="app_tarefas_list", methods={"GET", "HEAD"})
      */
@@ -59,6 +69,15 @@ class TarefasController extends AbstractController
             $orderBy = $this->getOrderBy($request);
 
             $entityList = $this->tarefasService->listaTarefasUseCase($usuario, $filters, $orderBy);
+
+            $properties = $this->getProperties($request);
+
+            if(isset($properties['projeto']) && filter_var($properties['projeto'], FILTER_VALIDATE_BOOLEAN)) {
+                $bp='';
+                for ($i=0; $i < count($entityList); $i++) {
+                    $entityList[$i]->serializarProjeto();
+                }
+            }
 
             return new JsonResponse($entityList);
         } catch (\Exception $e) {
