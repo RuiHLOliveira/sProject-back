@@ -70,12 +70,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
      */
     private $historicos;
 
+    /**
+     * @ORM\OneToMany(targetEntity=InboxItem::class, mappedBy="usuario")
+     */
+    private $inboxItems;
+
     public function __construct()
     {
         $this->dias = new ArrayCollection();
         $this->atividades = new ArrayCollection();
         $this->configuracoes = new ArrayCollection();
         $this->historicos = new ArrayCollection();
+        $this->inboxItems = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -281,6 +287,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
             // set the owning side to null (unless already changed)
             if ($historico->getUsuario() === $this) {
                 $historico->setUsuario(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, InboxItem>
+     */
+    public function getInboxItems(): Collection
+    {
+        return $this->inboxItems;
+    }
+
+    public function addInboxItem(InboxItem $inboxItem): self
+    {
+        if (!$this->inboxItems->contains($inboxItem)) {
+            $this->inboxItems[] = $inboxItem;
+            $inboxItem->setUsuario($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInboxItem(InboxItem $inboxItem): self
+    {
+        if ($this->inboxItems->removeElement($inboxItem)) {
+            // set the owning side to null (unless already changed)
+            if ($inboxItem->getUsuario() === $this) {
+                $inboxItem->setUsuario(null);
             }
         }
 

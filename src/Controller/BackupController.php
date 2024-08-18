@@ -6,16 +6,18 @@ use DateTime;
 use DateTimeZone;
 use App\Entity\Dia;
 use App\Entity\Note;
+use App\Entity\Habito;
 use App\Entity\Tarefa;
 use DateTimeImmutable;
 use App\Entity\Projeto;
 use App\Entity\Notebook;
 use App\Entity\Atividade;
-use App\Entity\Habito;
-use App\Entity\HabitoRealizado;
 use App\Entity\Historico;
+use App\Entity\InboxItem;
+use App\Entity\HabitoRealizado;
 use App\Service\HabitosService;
 use App\Service\ProjetosService;
+use App\Service\InboxItemService;
 use App\Service\HistoricosService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
@@ -40,6 +42,11 @@ class BackupController extends AbstractController
     private $habitosService;
 
     /**
+     * @var InboxItemService $inboxItemService
+     */
+    private $inboxItemService;
+
+    /**
      * @var HistoricosService $historicosService
      */
     private $historicosService;
@@ -47,11 +54,13 @@ class BackupController extends AbstractController
     public function __construct(
         ProjetosService $projetosService,
         HistoricosService $historicosService,
-        HabitosService $habitosService
+        HabitosService $habitosService,
+        InboxItemService $inboxItemService
     ) {
         $this->projetosService = $projetosService;
         $this->historicosService = $historicosService;
         $this->habitosService = $habitosService;
+        $this->inboxItemService = $inboxItemService;
     }
 
     /**
@@ -64,6 +73,7 @@ class BackupController extends AbstractController
             $arquivoTxt = '';
             $projetos = $this->projetosService->findAll($usuario, [], ['situacao'=>'asc','prioridade' => 'asc']);
             $habitos = $this->habitosService->findAll($usuario, [], []);
+            $inboxItems = $this->inboxItemService->findAll($usuario, [], []);
             /**
              * @var Projeto $projeto
              */
@@ -147,6 +157,25 @@ class BackupController extends AbstractController
                 $arquivoTxt .= "\n\n\n";
             }
 
+            
+            /**
+             * @var InboxItem $inboxItem
+             */
+            foreach($inboxItems as $key => $inboxItem) {
+                $createdAt = !is_null($inboxItem->getCreatedAt()) ? $inboxItem->getCreatedAt()->format('d/m/Y H:i:s') : '-';
+                $updatedAt = !is_null($inboxItem->getUpdatedAt()) ? $inboxItem->getUpdatedAt()->format('d/m/Y H:i:s') : '-';
+                $deletedAt = !is_null($inboxItem->getDeletedAt()) ? $inboxItem->getDeletedAt()->format('d/m/Y H:i:s') : '-';
+                $arquivoTxt .= "Nome: ".$inboxItem->getNome()."\n";
+                $arquivoTxt .= "Ação: ".$inboxItem->getAcao()."\n";
+                $arquivoTxt .= "Link: ".$inboxItem->getLink()."\n";
+                $arquivoTxt .= "Categoria: ".InboxItem::CATEGORIAS[$inboxItem->getCategoria()]."\n";
+                $arquivoTxt .= "Origem: ".InboxItem::ORIGENS[$inboxItem->getOrigem()]."\n";
+                $arquivoTxt .= "Criado em: ".$createdAt."\n";
+                $arquivoTxt .= "Ultima att: ".$updatedAt."\n";
+                $arquivoTxt .= "*******************\n";
+                $arquivoTxt .= "\n\n\n";
+            }
+
             return new JsonResponse(compact('arquivoTxt'), 200);
         } catch (\Exception $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -171,8 +200,10 @@ class BackupController extends AbstractController
             foreach($habitos as $key => $habito) {
                 $habitos[$key]->serializarHabitoRealizados();
             }
+            
+            $inboxItems = $this->inboxItemService->findAll($usuario, [], []);
 
-            return new JsonResponse(compact('projetos', 'habitos'), 200);
+            return new JsonResponse(compact('projetos', 'habitos', 'inboxItems'), 200);
         } catch (\Exception $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -222,6 +253,13 @@ class BackupController extends AbstractController
                     $entityManager->remove($realizado);
                 }
                 $entityManager->remove($habito);
+            }
+            
+            $inboxItems = $doctrine->getRepository(InboxItem::class)->findBy([
+                'usuario' => $usuario
+            ]);
+            foreach ($inboxItems as $key => $inboxItem) {
+                $entityManager->remove($inboxItem);
             }
 
             foreach ($requestData->projetos as $key => $projeto) {
@@ -349,6 +387,37 @@ class BackupController extends AbstractController
                     $entityManager->persist($realizadoObj);
                     $realizadoObj->getId();
                 }
+                $entityManager->flush();
+            }
+            
+            foreach ($requestData->inboxItems as $key => $inboxItem) {
+                $inboxItemObj = new InboxItem();
+                $inboxItemObj->setNome($inboxItem->nome);
+                $inboxItemObj->setAcao($inboxItem->acao);
+                $inboxItemObj->setLink($inboxItem->link);
+                $inboxItemObj->setCategoria($inboxItem->categoria);
+                $inboxItemObj->setOrigem($inboxItem->origem);
+                // created at
+                $timezone = new DateTimeZone($inboxItem->createdAt->timezone);
+                $createdAt = new DateTimeImmutable($inboxItem->createdAt->date, $timezone);
+                $inboxItemObj->setCreatedAt($createdAt);
+                // updated at
+                if($inboxItem->updatedAt != null) {
+                    $timezone = new DateTimeZone($inboxItem->updatedAt->timezone);
+                    $updatedAt = new DateTimeImmutable($inboxItem->updatedAt->date, $timezone);
+                    $inboxItemObj->setUpdatedAt($updatedAt);
+                }
+                // deleted at
+                if($inboxItem->deletedAt != null) {
+                    $timezone = new DateTimeZone($inboxItem->deletedAt->timezone);
+                    $deletedAt = new DateTimeImmutable($inboxItem->deletedAt->date, $timezone);
+                    $inboxItemObj->setDeletedAt($deletedAt);
+                }
+                // usuario
+                $inboxItemObj->setUsuario($usuario);
+                // persist
+                $entityManager->persist($inboxItemObj);
+                $inboxItemObj->getId();
                 $entityManager->flush();
             }
 
