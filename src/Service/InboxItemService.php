@@ -95,7 +95,7 @@ class InboxItemService
         $inboxItem->setLink($link);
         $inboxItem->setNome($nome);
         $inboxItem->setOrigem(0);
-        $inboxItem->setCategoria(0);
+        $inboxItem->setCategoriaItem(null);
         $inboxItem->setAcao('');
         $this->fillOrigenAutomatica($inboxItem);
         $this->grabTitle($inboxItem);

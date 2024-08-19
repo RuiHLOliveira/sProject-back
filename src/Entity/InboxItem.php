@@ -2,23 +2,15 @@
 
 namespace App\Entity;
 
-use App\Repository\InboxItemRepository;
+use App\Entity\CategoriaItem;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\InboxItemRepository;
 
 /**
  * @ORM\Entity(repositoryClass=InboxItemRepository::class)
  */
 class InboxItem extends JsonSerializableEntity
 {
-    const CATEGORIAS = [
-        '0' => '-',
-        '1' => 'Desenvolvimento Pessoal',
-        '2' => 'Exercício',
-        '3' => 'Finanças',
-        '4' => 'Receitas',
-        '5' => 'Mkt Instagram',
-    ];
-
     const ORIGEM_WEB = 1;
     const ORIGEM_YOUTUBE = 2;
     const ORIGEM_INSTAGRAM = 3;
@@ -30,7 +22,6 @@ class InboxItem extends JsonSerializableEntity
         self::ORIGEM_INSTAGRAM => 'Instagram',
     ];
 
-
     public function jsonSerialize()
     {
         // $this->fillSituacaoDescritivo();
@@ -38,11 +29,9 @@ class InboxItem extends JsonSerializableEntity
         $array['nome'] = $this->getNome();
         $array['link'] = $this->getLink();
         $array['origem'] = $this->getOrigem();
-        $array['categoria'] = $this->getCategoria();
-        $array['categoriaDescritivo'] = self::CATEGORIAS[$this->getCategoria()];
+        $array['categoriaItem'] = $this->getCategoriaItem();
         $array['origemDescritivo'] = self::ORIGENS[$this->getOrigem()];
         $array['acao'] = $this->getAcao();
-        $array['dict_categorias'] = self::CATEGORIAS;
         $array['dict_origens'] = self::ORIGENS;
         return $array;
     }
@@ -69,11 +58,6 @@ class InboxItem extends JsonSerializableEntity
     protected $origem;
 
     /**
-     * @ORM\Column(type="smallint")
-     */
-    protected $categoria;
-
-    /**
      * @ORM\Column(type="text")
      */
     protected $acao;
@@ -92,6 +76,12 @@ class InboxItem extends JsonSerializableEntity
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
     protected $deleted_at;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=CategoriaItem::class, inversedBy="inboxItems")
+     * @ORM\JoinColumn(nullable=true)
+     */
+    protected $categoriaItem;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="inboxItems")
@@ -140,18 +130,6 @@ class InboxItem extends JsonSerializableEntity
         return $this;
     }
 
-    public function getCategoria(): ?int
-    {
-        return $this->categoria;
-    }
-
-    public function setCategoria(int $categoria): self
-    {
-        $this->categoria = $categoria;
-
-        return $this;
-    }
-
     public function getAcao(): ?string
     {
         return $this->acao;
@@ -175,6 +153,19 @@ class InboxItem extends JsonSerializableEntity
 
         return $this;
     }
+
+    public function getCategoriaItem(): ?CategoriaItem
+    {
+        return $this->categoriaItem;
+    }
+
+    public function setCategoriaItem(?CategoriaItem $categoriaItem): self
+    {
+        $this->categoriaItem = $categoriaItem;
+
+        return $this;
+    }
+    
     
     public function getCreatedAt(): ?\DateTimeImmutable
     {

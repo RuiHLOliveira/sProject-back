@@ -47,7 +47,7 @@ class ConfiguracoesController extends AbstractController
 
             return new JsonResponse($entityList);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
     
@@ -78,7 +78,7 @@ class ConfiguracoesController extends AbstractController
             $configuracao = $this->configuracoesService->createNewConfiguracao($configuracao);
             return new JsonResponse($configuracao, Response::HTTP_CREATED);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -112,7 +112,7 @@ class ConfiguracoesController extends AbstractController
             return new JsonResponse();
             
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -130,7 +130,7 @@ class ConfiguracoesController extends AbstractController
             return new JsonResponse();
             
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 

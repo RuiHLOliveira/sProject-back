@@ -48,7 +48,7 @@ class PageController extends AbstractController
             if(!$this->isLoggedIn()) return $this->redirectToRoute('app_page_login');
             $this->redirectToRoute('app_page_home');
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
     /**
@@ -59,7 +59,7 @@ class PageController extends AbstractController
         try {
             return new Response($this->getHtmlFromTemplate('auth/register.html'));
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
     
@@ -71,7 +71,7 @@ class PageController extends AbstractController
         try {
             return new Response($this->getHtmlFromTemplate('auth/login.html'));
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -84,7 +84,7 @@ class PageController extends AbstractController
             if(!$this->isLoggedIn()) return $this->redirectToRoute('app_page_login');
             return new Response($this->getHtmlFromTemplate('home/home.html'));
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 

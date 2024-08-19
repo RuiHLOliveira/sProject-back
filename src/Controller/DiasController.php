@@ -43,7 +43,7 @@ class DiasController extends AbstractController
 
             return new JsonResponse($dias);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -63,7 +63,7 @@ class DiasController extends AbstractController
 
             return new JsonResponse($dia, Response::HTTP_CREATED);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 }

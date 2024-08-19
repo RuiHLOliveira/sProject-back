@@ -34,7 +34,7 @@ class HomeController extends AbstractController
         try {
             return new JsonResponse(['hello world'], 200);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 }

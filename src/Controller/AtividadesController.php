@@ -45,7 +45,7 @@ class AtividadesController extends AbstractController
 
             return new JsonResponse($entityList);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
     
@@ -75,7 +75,7 @@ class AtividadesController extends AbstractController
             $atividade = $this->atividadesService->createNewAtividade($atividade);
             return new JsonResponse($atividade, Response::HTTP_CREATED);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -110,7 +110,7 @@ class AtividadesController extends AbstractController
             return new JsonResponse();
             
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -129,7 +129,7 @@ class AtividadesController extends AbstractController
             $atividade = $this->atividadesService->find($atividade->getId(), $usuario);
             return new JsonResponse($atividade, Response::HTTP_OK);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
     
@@ -148,7 +148,7 @@ class AtividadesController extends AbstractController
             $atividade = $this->atividadesService->find($atividade->getId(), $usuario);
             return new JsonResponse($atividade, Response::HTTP_OK);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 

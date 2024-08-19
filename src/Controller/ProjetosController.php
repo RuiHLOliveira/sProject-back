@@ -62,7 +62,7 @@ class ProjetosController extends AbstractController
 
             return new JsonResponse($projetos);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (\Error $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -107,7 +107,7 @@ class ProjetosController extends AbstractController
 
             return new JsonResponse($projeto, Response::HTTP_CREATED);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (\Error $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -161,7 +161,7 @@ class ProjetosController extends AbstractController
 
             return new JsonResponse($projeto, Response::HTTP_CREATED);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (\Error $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -186,7 +186,7 @@ class ProjetosController extends AbstractController
 
             return new JsonResponse($projeto, Response::HTTP_CREATED);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (\Error $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }

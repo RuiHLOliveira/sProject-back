@@ -3,10 +3,12 @@
 namespace App\Controller;
 
 use Exception;
+use App\Entity\User;
 use DateTimeImmutable;
 use App\Entity\InboxItem;
 use PhpParser\JsonDecoder;
 use App\Service\InboxItemService;
+use App\Service\CategoriaItemService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,10 +22,14 @@ class InboxItemController extends AbstractController
 {
     
     private $inboxItemService;
+    private $categoriaItemService;
 
-    public function __construct(InboxItemService $inboxItemService)
-    {
+    public function __construct(
+        InboxItemService $inboxItemService,
+        CategoriaItemService $categoriaItemService
+    ) {
         $this->inboxItemService = $inboxItemService;
+        $this->categoriaItemService = $categoriaItemService;
     }
 
     private function getOrderBy(Request $request)
@@ -35,6 +41,20 @@ class InboxItemController extends AbstractController
             $orderBy = [$orderBy[0] => $orderBy[1]];
         }
         return $orderBy;
+    }
+
+    private function getFilters(Request $request, User $usuario): array
+    {
+        $filters = [];
+        $categoriaItem = $request->query->get('categoriaItem');
+        if($categoriaItem != null){
+            if($categoriaItem > 0){
+                $filters['categoriaItem'] = $this->categoriaItemService->find($categoriaItem, $usuario);
+            } elseif ($categoriaItem == 0){
+                $filters['categoriaItem'] = null;
+            }
+        }
+        return $filters;
     }
 
     private function getProperties(Request $request)
@@ -55,7 +75,7 @@ class InboxItemController extends AbstractController
         try {
             $usuario = $this->getUser();
 
-            $filters = [];
+            $filters = $this->getFilters($request, $usuario);
             $orderBy = $this->getOrderBy($request);
 
             $entityList = $this->inboxItemService->listaInboxItemsUseCase($usuario, $filters, $orderBy);
@@ -71,7 +91,7 @@ class InboxItemController extends AbstractController
 
             return new JsonResponse($entityList);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
     
@@ -98,7 +118,7 @@ class InboxItemController extends AbstractController
             $inboxItem = $this->inboxItemService->createNewInboxItem($inboxItem);
             return new JsonResponse($inboxItem, Response::HTTP_CREATED);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -107,7 +127,7 @@ class InboxItemController extends AbstractController
         if( !property_exists($requestData, 'nome') || $requestData->nome == ''){
             throw new BadRequestHttpException("Nome não enviada.");
         }
-        if( !property_exists($requestData, 'categoria') || $requestData->categoria == ''){
+        if( !property_exists($requestData, 'categoriaItem') || $requestData->categoriaItem == ''){
             throw new BadRequestHttpException("Categoria não enviada.");
         }
         // if( !property_exists($requestData, 'origem') || $requestData->origem == ''){
@@ -132,15 +152,15 @@ class InboxItemController extends AbstractController
 
             $inboxItem->setNome($requestData->nome);
             $inboxItem->setLink($requestData->link);
-            // $inboxItem->setOrigem($requestData->origem);
-            $inboxItem->setCategoria($requestData->categoria);
+            $categoriaItem = $this->categoriaItemService->find($requestData->categoriaItem, $usuario);
+            $inboxItem->setCategoriaItem($categoriaItem);
             $inboxItem->setAcao($requestData->acao);
             $this->inboxItemService->atualizainboxItemUseCase($inboxItem);
 
             return new JsonResponse();
             
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 

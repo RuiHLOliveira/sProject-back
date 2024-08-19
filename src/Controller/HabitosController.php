@@ -69,7 +69,7 @@ class HabitosController extends AbstractController
 
             return new JsonResponse($entityList);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
     
@@ -96,7 +96,7 @@ class HabitosController extends AbstractController
             $habito = $this->habitosService->createNewHabito($habito);
             return new JsonResponse($habito, Response::HTTP_CREATED);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -133,7 +133,7 @@ class HabitosController extends AbstractController
             return new JsonResponse();
             
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -152,7 +152,7 @@ class HabitosController extends AbstractController
             $habito = $this->habitosService->find($habito->getId(), $usuario);
             return new JsonResponse($habito, Response::HTTP_OK);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
     
