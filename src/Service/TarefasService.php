@@ -39,10 +39,11 @@ class TarefasService
      */
     public function find(string $idTarefa, User $usuario): Tarefa
     {
-        return $this->doctrine->getRepository(Tarefa::class)->findOneBy([
+        $tarefa = $this->doctrine->getRepository(Tarefa::class)->findOneBy([
             'id' => $idTarefa,
             'usuario' => $usuario
         ]);
+        return $tarefa;
     }
 
     /**
@@ -177,6 +178,39 @@ class TarefasService
             throw $th;
         }
     }
+
+    public function adicionarAoMeuDia(Tarefa $tarefa, User $usuario){
+        try {
+            $entityManager = $this->doctrine->getManager();
+            $entityManager->getConnection()->beginTransaction();
+            $tarefa->adicionarAoMeuDia();
+            $tarefa->setUpdatedAt(new DateTimeImmutable());
+            $entityManager->persist($tarefa);
+            $entityManager->flush();
+            $entityManager->getConnection()->commit();
+            return $tarefa;
+        } catch (\Throwable $th) {
+            $entityManager->getConnection()->rollback();
+            throw $th;
+        }
+    }
+    
+    public function removerMeuDia(Tarefa $tarefa, User $usuario){
+        try {
+            $entityManager = $this->doctrine->getManager();
+            $entityManager->getConnection()->beginTransaction();
+            $tarefa->removerMeuDia();
+            $tarefa->setUpdatedAt(new DateTimeImmutable());
+            $entityManager->persist($tarefa);
+            $entityManager->flush();
+            $entityManager->getConnection()->commit();
+            return $tarefa;
+        } catch (\Throwable $th) {
+            $entityManager->getConnection()->rollback();
+            throw $th;
+        }
+    }
+    
     
 
     public function falhar(Tarefa $tarefa, User $usuario){

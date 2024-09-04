@@ -16,6 +16,7 @@ class HabitoRealizado extends JsonSerializableEntity
         $array = parent::jsonSerialize();
         // $array['habito'] = $this->getHabito(); //recursion
         $array['realizadoEm'] = $this->getRealizadoEm() != null ? $this->getRealizadoEm()->format('Y-m-d H:i:s') : null;
+        $array['realizadoEmObj'] = $this->getRealizadoEm();
         return $array;
     }
     /**

@@ -111,25 +111,22 @@ class AuthController extends AbstractController
 
             //se não achar acusa erro
             if (!$user) {
-                return $this->json([
-                    'message' => 'E-mail não existe.',
-                ], Response::HTTP_BAD_REQUEST);
+                return new JsonResponse(['message' => 'E-mail não existe.'], Response::HTTP_BAD_REQUEST);
             }
             
             //se não achar acusa erro
             if (!$encoder->isPasswordValid($user, $password)) {
-                return $this->json([
-                    'message' => 'Senha incorreta.',
-                ], Response::HTTP_BAD_REQUEST);
+                return new JsonResponse(['message' => 'Senha incorreta.'], Response::HTTP_BAD_REQUEST);
             }
 
             $tokens = $this->makeNewTokens($user);
             
-            return $this->json([
+            return new JsonResponse([
                 'message' => 'success!',
                 'token' => $tokens['token'],
                 'refreshToken' => $tokens['refreshToken']
             ]);
+            
         } catch (\Throwable $th) {
             return new JsonResponse(['message' => $th->getMessage()],500);
         }
@@ -143,7 +140,7 @@ class AuthController extends AbstractController
         ];
         $payloadRefresh = [
             "username" => $user->getUserIdentifier(),
-            "exp"  => (new \DateTime())->modify("+600 minutes")->getTimestamp(),
+            "exp"  => (new \DateTime())->modify("+2160 minutes")->getTimestamp(),
         ];
 
         $jwt = JWT::encode($payloadJwt, $this->getParameter('jwt_secret'), 'HS256');

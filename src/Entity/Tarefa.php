@@ -32,6 +32,8 @@ class Tarefa extends JsonSerializableEntity
         $array['situacao'] = $this->getSituacao();
         $array['situacaoDescritivo'] = $this->getSituacaoDescritivo();
         $array['hora'] = $this->getHora() != null ? $this->getHora()->format('H:i') : null;
+        $array['meuDia'] = $this->getMeuDia() != null ? $this->getMeuDia()->format('Y-m-d H:i:s') : null;
+        $array['meuDiaObj'] = $this->getMeuDia();
 
         if(!$this->serializarProjeto) {
             $array['projeto'] = $this->getProjeto()->getId();
@@ -51,6 +53,20 @@ class Tarefa extends JsonSerializableEntity
 
     public function fillSituacaoDescritivo(){
         $this->setSituacaoDescritivo(self::DESCRITIVOS_SITUACAO[$this->getSituacao()]);
+    }
+
+    public function adicionarAoMeuDia() {
+        // if($this->situacao !== self::SITUACAO_PENDENTE)
+        //     throw new Exception("Não é possível concluir uma tarefa que não está pendente.");
+        $this->meuDia = new DateTimeImmutable();
+        return $this;
+    }
+    
+    public function removerMeuDia() {
+        // if($this->situacao !== self::SITUACAO_PENDENTE)
+        //     throw new Exception("Não é possível concluir uma tarefa que não está pendente.");
+        $this->meuDia = null;
+        return $this;
     }
 
     public function concluir() {
@@ -82,6 +98,11 @@ class Tarefa extends JsonSerializableEntity
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
     protected $hora;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    protected $meuDia;
 
     /**
      * @ORM\Column(type="datetime_immutable")
@@ -226,6 +247,24 @@ class Tarefa extends JsonSerializableEntity
     public function setProjeto(?Projeto $projeto): self
     {
         $this->projeto = $projeto;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of meuDia
+     */
+    public function getMeuDia()
+    {
+        return $this->meuDia;
+    }
+
+    /**
+     * Set the value of meuDia
+     */
+    public function setMeuDia($meuDia): self
+    {
+        $this->meuDia = $meuDia;
 
         return $this;
     }

@@ -170,6 +170,44 @@ class TarefasController extends AbstractController
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
+
+     /**
+     * @Route("/tarefas/{id}/meu-dia", name="app_tarefas_adicionar_meu_dia", methods={"POST"})
+     */
+    public function adicionarAoMeuDiaTarefa($id, Request $request, ManagerRegistry $doctrine): JsonResponse
+    {
+        try {
+            $usuario = $this->getUser();
+            $tarefa = $this->tarefasService->find($id, $usuario);
+            if($tarefa == null) {
+                throw new NotFoundHttpException('Tarefa não encontrada.');
+            }
+            $tarefa = $this->tarefasService->adicionarAoMeuDia($tarefa, $usuario);
+            $tarefa = $this->tarefasService->find($tarefa->getId(), $usuario);
+            return new JsonResponse($tarefa, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+    }
+    
+     /**
+     * @Route("/tarefas/{id}/remover-meu-dia", name="app_tarefas_remover_meu_dia", methods={"POST"})
+     */
+    public function removerMeuDiaTarefa($id, Request $request, ManagerRegistry $doctrine): JsonResponse
+    {
+        try {
+            $usuario = $this->getUser();
+            $tarefa = $this->tarefasService->find($id, $usuario);
+            if($tarefa == null) {
+                throw new NotFoundHttpException('Tarefa não encontrada.');
+            }
+            $tarefa = $this->tarefasService->removerMeuDia($tarefa, $usuario);
+            $tarefa = $this->tarefasService->find($tarefa->getId(), $usuario);
+            return new JsonResponse($tarefa, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+    }
     
     /**
      * @Route("/tarefas/{id}/falhar", name="app_tarefas_falhar", methods={"POST"})
