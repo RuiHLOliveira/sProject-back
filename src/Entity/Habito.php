@@ -35,6 +35,7 @@ class Habito extends JsonSerializableEntity
         $this->fillSituacaoDescritivo();
         $array = parent::jsonSerialize();
         $array['descricao'] = $this->getDescricao();
+        $array['motivo'] = $this->getMotivo();
         $array['situacao'] = $this->getSituacao();
         $array['situacaoDescritivo'] = $this->getSituacaoDescritivo();
         $array['hora'] = $this->getHora() != null ? $this->getHora()->format('H:i') : null;
@@ -84,6 +85,11 @@ class Habito extends JsonSerializableEntity
      * @ORM\Column(type="text")
      */
     protected $descricao;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    protected $motivo;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
@@ -141,6 +147,18 @@ class Habito extends JsonSerializableEntity
     public function setDescricao(string $descricao): self
     {
         $this->descricao = $descricao;
+
+        return $this;
+    }
+
+    public function getMotivo(): ?string
+    {
+        return $this->motivo;
+    }
+
+    public function setMotivo(string $motivo): self
+    {
+        $this->motivo = $motivo;
 
         return $this;
     }

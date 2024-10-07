@@ -92,7 +92,7 @@ class HabitosController extends AbstractController
             $requestData = json_decode($request->getContent());
             $this->validateCreateHabitoData($requestData);
 
-            $habito = $this->habitosService->factoryHabito($requestData->descricao, $requestData->hora, $usuario);
+            $habito = $this->habitosService->factoryHabito($requestData->descricao, $requestData->motivo, $requestData->hora, $usuario);
             $habito = $this->habitosService->createNewHabito($habito);
             return new JsonResponse($habito, Response::HTTP_CREATED);
         } catch (\Exception $e) {
@@ -125,6 +125,7 @@ class HabitosController extends AbstractController
             }
 
             $habito->setDescricao($requestData->descricao);
+            $habito->setMotivo($requestData->motivo);
             if($requestData->hora != '') {
                 $habito->setHora(new DateTimeImmutable($requestData->hora));
             }

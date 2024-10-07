@@ -98,11 +98,12 @@ class HabitosService
      * @param User $usuario
      * @return Habito
      */
-    public function factoryHabito($descricao, $hora, $usuario) {
+    public function factoryHabito($descricao, $motivo, $hora, $usuario) {
 
         $habito = new Habito();
         $habito->setUsuario($usuario);
         $habito->setDescricao($descricao);
+        $habito->setMotivo($motivo);
         $habito->setSituacao(0);
         if($hora != ''){
             $habito->setHora(new DateTimeImmutable($hora));

@@ -111,6 +111,7 @@ class BackupController extends AbstractController
                     $hora = !is_null($tarefa->getHora()) ? $tarefa->getHora()->format('d/m/Y H:i:s') : '-';
                     $tarefa->fillSituacaoDescritivo();
                     $arquivoTxt .= "Descricao: ".$tarefa->getDescricao()."\n";
+                    $arquivoTxt .= "Motivo: ".$tarefa->getMotivo()."\n";
                     $arquivoTxt .= "Situacao: ".$tarefa->getSituacao().'-'.$tarefa->getSituacaoDescritivo()."\n";
                     $arquivoTxt .= "Hora: ".$hora."\n";
                     // $arquivoTxt .= "CreatedAt : ".$createdAt."\n";
@@ -146,6 +147,7 @@ class BackupController extends AbstractController
                 $updatedAt = !is_null($habito->getUpdatedAt()) ? $habito->getUpdatedAt()->format('d/m/Y H:i:s') : '-';
                 $deletedAt = !is_null($habito->getDeletedAt()) ? $habito->getDeletedAt()->format('d/m/Y H:i:s') : '-';
                 $arquivoTxt .= "Habito: ".$habito->getDescricao()."\n";
+                $arquivoTxt .= "Motivo: ".$habito->getMovito()."\n";
                 $arquivoTxt .= "Hora: ".$hora."\n";
                 $arquivoTxt .= "Criado em: ".$createdAt."\n";
                 $arquivoTxt .= "Ultima att: ".$updatedAt."\n";
@@ -315,6 +317,7 @@ class BackupController extends AbstractController
                 foreach($projeto->tarefas as $key => $tarefa) {
                     $tarefaObj = new Tarefa();
                     $tarefaObj->setDescricao($tarefa->descricao);
+                    $tarefaObj->setMotivo($tarefa->motivo);
                     // situacao
                     if(property_exists($tarefa,'situacao')) {
                         $tarefaObj->setSituacao($tarefa->situacao);
@@ -354,6 +357,7 @@ class BackupController extends AbstractController
             foreach ($requestData->habitos as $key => $habito) {
                 $habitoObj = new Habito();
                 $habitoObj->setDescricao($habito->descricao);
+                $habitoObj->setMotivo($habito->motivo);
                 $habitoObj->setSituacao($habito->situacao);
                 // created at
                 $timezone = new DateTimeZone($habito->createdAt->timezone);
