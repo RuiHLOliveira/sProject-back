@@ -16,12 +16,14 @@ use App\Entity\CategoriaItem;
 use App\Entity\Historico;
 use App\Entity\InboxItem;
 use App\Entity\HabitoRealizado;
+use App\Service\BackupService;
 use App\Service\CategoriaItemService;
 use App\Service\HabitosService;
 use App\Service\ProjetosService;
 use App\Service\InboxItemService;
 use App\Service\HistoricosService;
 use Doctrine\Persistence\ManagerRegistry;
+use LogicException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -58,19 +60,45 @@ class BackupController extends AbstractController
      */
     private $categoriaItemsService;
 
+    /**
+     * @var BackupService $backupService
+     */
+    private $backupService;
+
     public function __construct(
         ProjetosService $projetosService,
         HistoricosService $historicosService,
         HabitosService $habitosService,
         InboxItemService $inboxItemService,
-        CategoriaItemService $categoriaItemsService
+        CategoriaItemService $categoriaItemsService,
+        BackupService $backupService
     ) {
         $this->projetosService = $projetosService;
         $this->historicosService = $historicosService;
         $this->habitosService = $habitosService;
         $this->inboxItemService = $inboxItemService;
         $this->categoriaItemsService = $categoriaItemsService;
+        $this->backupService = $backupService;
     }
+
+    
+    /**
+     * @Route("/backup/exportSqlBkpInsert", name="exportSqlBkpInsert")
+     */
+    public function exportSqlBkpInsert(Request $request, ManagerRegistry $doctrine): JsonResponse
+    {
+        try {
+            $usuario = $this->getUser();
+            if(!strstr($usuario->getEmail(),'ruigx')){
+                throw new LogicException("Usuario não suportado!");
+            }
+            $arquivoSql = $this->backupService->runBackup();
+            return new JsonResponse(compact('arquivoSql'), 200);
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
 
     /**
      * @Route("/backup/exportProjetosTxt", name="backupExportProjetosTxt")
@@ -147,7 +175,7 @@ class BackupController extends AbstractController
                 $updatedAt = !is_null($habito->getUpdatedAt()) ? $habito->getUpdatedAt()->format('d/m/Y H:i:s') : '-';
                 $deletedAt = !is_null($habito->getDeletedAt()) ? $habito->getDeletedAt()->format('d/m/Y H:i:s') : '-';
                 $arquivoTxt .= "Habito: ".$habito->getDescricao()."\n";
-                $arquivoTxt .= "Motivo: ".$habito->getMovito()."\n";
+                $arquivoTxt .= "Motivo: ".$habito->getMotivo()."\n";
                 $arquivoTxt .= "Hora: ".$hora."\n";
                 $arquivoTxt .= "Criado em: ".$createdAt."\n";
                 $arquivoTxt .= "Ultima att: ".$updatedAt."\n";
