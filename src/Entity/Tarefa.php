@@ -31,6 +31,7 @@ class Tarefa extends JsonSerializableEntity
         $array['descricao'] = $this->getDescricao();
         $array['motivo'] = $this->getMotivo();
         $array['situacao'] = $this->getSituacao();
+        $array['prioridade'] = $this->getPrioridade();
         $array['situacaoDescritivo'] = $this->getSituacaoDescritivo();
         $array['hora'] = $this->getHora() != null ? $this->getHora()->format('H:i') : null;
         $array['meuDia'] = $this->getMeuDia() != null ? $this->getMeuDia()->format('Y-m-d H:i:s') : null;
@@ -130,6 +131,11 @@ class Tarefa extends JsonSerializableEntity
      * @ORM\JoinColumn(nullable=false)
      */
     protected $usuario;
+
+    /**
+     * @ORM\Column(type="integer", nullable="true")
+     */
+    protected $prioridade;
 
     /**
      * @ORM\Column(type="integer")
@@ -254,6 +260,18 @@ class Tarefa extends JsonSerializableEntity
     public function setSituacaoDescritivo(string $situacaoDescritivo): self
     {
         $this->situacaoDescritivo = $situacaoDescritivo;
+        return $this;
+    }
+
+    public function getPrioridade(): ?int
+    {
+        return $this->prioridade;
+    }
+
+    public function setPrioridade(int $prioridade): self
+    {
+        $this->prioridade = $prioridade;
+
         return $this;
     }
 

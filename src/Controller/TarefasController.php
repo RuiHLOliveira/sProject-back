@@ -154,6 +154,27 @@ class TarefasController extends AbstractController
     }
 
     /**
+     * @Route("/tarefas/{id}/prioridade", name="app_tarefas_update_prioridade", methods={"PUT"})
+     */
+    public function updatePrioridade($id, Request $request): JsonResponse
+    {
+        try {
+            $usuario = $this->getUser();
+            $requestData = json_decode($request->getContent());
+            $this->validateUpdateTarefaData($requestData);
+            $tarefa = $this->tarefasService->find($id, $usuario);
+            if($tarefa == null) {
+                throw new NotFoundHttpException('Tarefa não encontrada.');
+            }
+            $tarefa->setPrioridade($requestData->prioridade);
+            $this->tarefasService->atualizaTarefasUseCase($tarefa);
+            return new JsonResponse();
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
      * @Route("/tarefas/{id}/concluir", name="app_tarefas_concluir", methods={"POST"})
      */
     public function concluiTarefa($id, Request $request, ManagerRegistry $doctrine): JsonResponse

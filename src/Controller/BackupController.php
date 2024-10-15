@@ -141,6 +141,7 @@ class BackupController extends AbstractController
                     $arquivoTxt .= "Descricao: ".$tarefa->getDescricao()."\n";
                     $arquivoTxt .= "Motivo: ".$tarefa->getMotivo()."\n";
                     $arquivoTxt .= "Situacao: ".$tarefa->getSituacao().'-'.$tarefa->getSituacaoDescritivo()."\n";
+                    $arquivoTxt .= "Prioridade: ".$tarefa->getPrioridade()."\n";
                     $arquivoTxt .= "Hora: ".$hora."\n";
                     // $arquivoTxt .= "CreatedAt : ".$createdAt."\n";
                     // $arquivoTxt .= "UpdatedAt : ".$updatedAt."\n";
@@ -351,6 +352,9 @@ class BackupController extends AbstractController
                         $tarefaObj->setSituacao($tarefa->situacao);
                     } else {
                         $tarefaObj->setSituacao(Tarefa::SITUACAO_PENDENTE);
+                    }
+                    if(property_exists($tarefa,'prioridade')) {
+                        $tarefaObj->setPrioridade($tarefa->prioridade);
                     }
                     $timezone = new DateTimeZone($tarefa->createdAt->timezone);
                     //hora
