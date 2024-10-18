@@ -73,6 +73,7 @@ class ProjetosService
         $projeto->setAnotacoes($anotacoes);
         $projeto->setSituacao(Projeto::SITUACAO_PENDENTE);
         $projeto->setPrioridade($prioridade);
+        $projeto->setFixado(false);
         return $projeto;
     }
 
@@ -154,6 +155,29 @@ class ProjetosService
             $entityManager->flush();
             $entityManager->getConnection()->commit();
             return $projeto;
+        } catch (\Throwable $th) {
+            $entityManager->getConnection()->rollback();
+            throw $th;
+        }
+    }
+
+    public function fixarDesafixar(Projeto $projeto, User $usuario)
+    {
+        try {
+            $entityManager = $this->doctrine->getManager();
+            $entityManager->getConnection()->beginTransaction();
+            
+            $projeto->setFixado(!$projeto->getFixado());
+            $projeto->setUpdatedAt(new DateTimeImmutable());
+
+            $entityManager->persist($projeto);
+            
+            $descricaoHistorico = $projeto->getFixado() ? 'Projeto fixado' : 'Projeto desafixado';
+            $historicoCriado = $this->criaHistorico($usuario, $projeto, $descricaoHistorico);
+
+            $entityManager->flush();
+            $entityManager->getConnection()->commit();
+            return $descricaoHistorico;
         } catch (\Throwable $th) {
             $entityManager->getConnection()->rollback();
             throw $th;

@@ -2,16 +2,17 @@
 
 namespace App\Controller;
 
+use Exception;
 use DateTimeImmutable;
 use App\Entity\Projeto;
 use App\Service\ProjetosService;
 use Doctrine\Persistence\ManagerRegistry;
-use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProjetosController extends AbstractController
 {
@@ -34,7 +35,7 @@ class ProjetosController extends AbstractController
         try {
             $usuario = $this->getUser();
 
-            $orderBy = null;
+            $orderBy = [];
             if($request->query->get('orderBy') != null){
                 $orderBy = $request->query->get('orderBy');
                 $orderBy = explode(',', $orderBy);
@@ -43,13 +44,20 @@ class ProjetosController extends AbstractController
 
             $filters = [];
             if($request->query->get('situacao') != null){
-                $filter = $request->query->get('situacao');
-                $filters['situacao'] = $filter;
+                $value = $request->query->get('situacao');
+                $filters['situacao'] = $value;
             }
             if($request->query->get('prioridade') != null){
-                $filter = $request->query->get('prioridade');
-                $filters['prioridade'] = $filter;
+                $value = $request->query->get('prioridade');
+                $filters['prioridade'] = $value;
             }
+            if($request->query->get('fixado') != null){
+                $value = $request->query->get('fixado');
+                if($value == '1') $value = true;
+                if($value == '0') $value = false;
+                $filters['fixado'] = $value;
+            }
+
 
             $projetos = $this->projetosService->listaProjetosUseCase($usuario, $filters, $orderBy);
 
@@ -189,6 +197,25 @@ class ProjetosController extends AbstractController
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (\Error $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @Route("/projetos/{id}/fixar-desafixar", name="app_projetos_fixardesafixar", methods={"POST"})
+     */
+    public function fixarDesafixar($id, Request $request, ManagerRegistry $doctrine): JsonResponse
+    {
+        try {
+            $usuario = $this->getUser();
+            $projeto = $this->projetosService->findOne($usuario, $id);
+            if($projeto == null) {
+                throw new NotFoundHttpException('Projeto não encontrado.');
+            }
+            $response = $this->projetosService->fixarDesafixar($projeto, $usuario);
+            $projeto = $this->projetosService->findOne($usuario, $projeto->getId());
+            return new JsonResponse($response, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 }

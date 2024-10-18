@@ -22,6 +22,7 @@ class Projeto implements JsonSerializable
             'id' => $this->getId(),
             'nome' => $this->getNome(),
             'anotacoes' => $this->getAnotacoes(),
+            'fixado' => $this->getFixado(),
             'situacao' => $this->getSituacao(),
             'situacaoDescritivo' => $this->getSituacaoDescritivo(),
             'prioridade' => $this->getPrioridade(),
@@ -44,8 +45,8 @@ class Projeto implements JsonSerializable
 
     const DESCRITIVOS_SITUACAO = [
         self::SITUACAO_PENDENTE => 'pendente',
-        self::SITUACAO_AGUARDANDO_RESPOSTA => 'aguardando resposta',
-        self::SITUACAO_PAUSADO_INDEFINIDAMENTE => 'pausado indefinidamente',
+        self::SITUACAO_AGUARDANDO_RESPOSTA => 'espera',
+        self::SITUACAO_PAUSADO_INDEFINIDAMENTE => 'suspenso',
         self::SITUACAO_CONCLUIDO => 'concluida',
     ];
 
@@ -157,6 +158,11 @@ class Projeto implements JsonSerializable
      * @ORM\Column(type="smallint", options={"default":5})
      */
     private $prioridade;
+
+    /**
+     * @ORM\Column(type="boolean", options={"default":false})
+     */
+    private $fixado;
 
     protected $prioridadeDescritivo;
     
@@ -332,6 +338,17 @@ class Projeto implements JsonSerializable
     public function setPrioridadeDescritivo(string $prioridadeDescritivo): self
     {
         $this->prioridadeDescritivo = $prioridadeDescritivo;
+        return $this;
+    }
+    
+    public function getFixado(): ?bool
+    {
+        return $this->fixado;
+    }
+
+    public function setFixado(bool $fixado): self
+    {
+        $this->fixado = $fixado;
         return $this;
     }
 }
