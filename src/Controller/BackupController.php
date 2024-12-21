@@ -321,6 +321,7 @@ class BackupController extends AbstractController
                 $projetoObj->setSituacao($projeto->situacao);
                 $projetoObj->setPrioridade($projeto->prioridade);
                 $projetoObj->setDataPrazo(new DateTimeImmutable($projeto->dataPrazo));
+                $projetoObj->setFixado(false);
                 // created at
                 $timezone = new DateTimeZone($projeto->createdAt->timezone);
                 $createdAt = new DateTimeImmutable($projeto->createdAt->date, $timezone);
@@ -346,15 +347,18 @@ class BackupController extends AbstractController
                 foreach($projeto->tarefas as $key => $tarefa) {
                     $tarefaObj = new Tarefa();
                     $tarefaObj->setDescricao($tarefa->descricao);
-                    $tarefaObj->setMotivo($tarefa->motivo);
+                    if($tarefa->motivo != null)
+                        $tarefaObj->setMotivo($tarefa->motivo);
                     // situacao
                     if(property_exists($tarefa,'situacao')) {
                         $tarefaObj->setSituacao($tarefa->situacao);
                     } else {
                         $tarefaObj->setSituacao(Tarefa::SITUACAO_PENDENTE);
                     }
-                    if(property_exists($tarefa,'prioridade')) {
+                    if(property_exists($tarefa,'prioridade') && $tarefa->prioridade != null) {
                         $tarefaObj->setPrioridade($tarefa->prioridade);
+                    } else {
+                        $tarefaObj->setPrioridade(5);
                     }
                     $timezone = new DateTimeZone($tarefa->createdAt->timezone);
                     //hora
@@ -518,9 +522,9 @@ class BackupController extends AbstractController
             $entityManager->getConnection()->commit();
             $mensagem = "Backup successfully restored";
             return new JsonResponse(compact('mensagem'), 200);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $entityManager->getConnection()->rollback();
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -731,7 +735,7 @@ class BackupController extends AbstractController
             
         } catch (\Exception $e) {
             $entityManager->getConnection()->rollback();
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 }
