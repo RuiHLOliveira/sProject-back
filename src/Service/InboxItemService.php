@@ -179,4 +179,21 @@ class InboxItemService
         }
     }
 
+    public function delete(InboxItem $inboxItem, User $usuario)
+    {
+        try {
+            $entityManager = $this->doctrine->getManager();
+            $entityManager->getConnection()->beginTransaction();
+
+            $entityManager->remove($inboxItem);
+            $entityManager->flush();
+            $entityManager->getConnection()->commit();
+            return $inboxItem;
+        } catch (\Throwable $th) {
+            $entityManager->getConnection()->rollback();
+            throw $th;
+        }
+    }
+
+
 }

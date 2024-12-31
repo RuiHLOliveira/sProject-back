@@ -152,7 +152,7 @@ class InboxItemController extends AbstractController
 
             $inboxItem->setNome($requestData->nome);
             $inboxItem->setLink($requestData->link);
-            $categoriaItem = $this->categoriaItemService->find($requestData->categoriaItem, $usuario);
+            $categoriaItem = $this->categoriaItemService->find($requestData->categoriaItem->id, $usuario);
             $inboxItem->setCategoriaItem($categoriaItem);
             $inboxItem->setAcao($requestData->acao);
             $this->inboxItemService->atualizainboxItemUseCase($inboxItem);
@@ -163,5 +163,27 @@ class InboxItemController extends AbstractController
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
+    
+    /**
+     * @Route("/inboxItems/{id}", name="app_inboxItems_delete", methods={"DELETE"})
+     */
+    public function delete($id, Request $request): JsonResponse
+    {
+        try {
+            $usuario = $this->getUser();
 
+            $inboxItem = $this->inboxItemService->find($id, $usuario);
+            if($inboxItem == null) {
+                throw new NotFoundHttpException('inboxItem não encontrada.');
+            }
+
+            $inboxItem = $this->inboxItemService->delete($inboxItem, $usuario);
+
+            return new JsonResponse($inboxItem, Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        } catch (\Error $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+    }
 }
