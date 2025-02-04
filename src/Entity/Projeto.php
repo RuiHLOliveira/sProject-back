@@ -35,6 +35,9 @@ class Projeto implements JsonSerializable
         if($this->serializarTarefas) {
             $array['tarefas'] = $this->tarefasArray;
         }
+        if($this->serializarProjetosfotos) {
+            $array['projetosfotos'] = $this->projetosfotosArray;
+        }
         return $array;
     }
     
@@ -73,7 +76,9 @@ class Projeto implements JsonSerializable
     ];
 
     private $serializarTarefas;
+    private $serializarProjetosfotos;
     private $tarefasArray;
+    private $projetosfotosArray;
 
     /**
      * Marca as tarefas deste Projeto para serem serializadas
@@ -82,11 +87,20 @@ class Projeto implements JsonSerializable
         $this->serializarTarefas = true;
         $this->tarefasToArray();
     }
+    public function serializarProjetosfotos(){
+        $this->serializarProjetosfotos = true;
+        $this->projetosfotosToArray();
+    }
     
     public function tarefasToArray() {
         $collection = $this->getTarefas();
         $collection = $collection->toArray();
         $this->tarefasArray = $collection;
+    }
+    public function projetosfotosToArray() {
+        $collection = $this->getProjetosfotos();
+        $collection = $collection->toArray();
+        $this->projetosfotosArray = $collection;
     }
     
     public function fillSituacaoDescritivo(){
@@ -138,6 +152,11 @@ class Projeto implements JsonSerializable
     private $tarefas;
 
     /**
+     * @ORM\OneToMany(targetEntity=Projetofoto::class, mappedBy="projeto")
+     */
+    private $projetosfotos;
+
+    /**
      * @ORM\Column(type="string", length=255)
      */
     private $nome;
@@ -170,6 +189,7 @@ class Projeto implements JsonSerializable
     {
         // $this->horas = new ArrayCollection();
         $this->tarefas = new ArrayCollection();
+        $this->projetosfotos = new ArrayCollection();
         $this->fillSituacaoDescritivo();
         $this->fillPrioridadeDescritivo();
     }
@@ -263,6 +283,35 @@ class Projeto implements JsonSerializable
             // set the owning side to null (unless already changed)
             if ($tarefa->getProjeto() === $this) {
                 $tarefa->setProjeto(null);
+            }
+        }
+
+        return $this;
+    }
+    
+    /**
+     * @return Collection<int, Projetofoto>
+     */
+    public function getProjetosfotos(): Collection
+    {
+        return $this->projetosfotos;
+    }
+
+    public function addProjetofoto(Projetofoto $projetofoto): self
+    {
+        if (!$this->projetosfotos->contains($projetofoto)) {
+            $this->projetosfotos[] = $projetofoto;
+            $projetofoto->setProjeto($this);
+        }
+        return $this;
+    }
+
+    public function removeProjetofoto(Projetofoto $projetofoto): self
+    {
+        if ($this->projetosfotos->removeElement($projetofoto)) {
+            // set the owning side to null (unless already changed)
+            if ($projetofoto->getProjeto() === $this) {
+                $projetofoto->setProjeto(null);
             }
         }
 

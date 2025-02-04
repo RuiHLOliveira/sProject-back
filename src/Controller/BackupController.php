@@ -8,6 +8,7 @@ use App\Entity\Dia;
 use App\Entity\Note;
 use App\Entity\Habito;
 use App\Entity\Tarefa;
+use App\Entity\Projetofoto;
 use DateTimeImmutable;
 use App\Entity\Projeto;
 use App\Entity\Notebook;
@@ -130,6 +131,17 @@ class BackupController extends AbstractController
                 $arquivoTxt .= "Criado em: ".$createdAt."\n";
                 $arquivoTxt .= "Ultima att: ".$updatedAt."\n";
                 $arquivoTxt .= "*******************\n";
+                $arquivoTxt .= "Projetos fotos: \n";
+                /**
+                 * @var Projetofoto $projetofoto
+                 */
+                foreach ($projeto->getProjetosfotos() as $key => $projetofoto) {
+                    if($key > 0 && $key < count($projeto->getProjetosfotos())) $arquivoTxt .= "-------------\n";
+                    $arquivoTxt .= "Descricao: ".$projetofoto->getDescricao()."\n";
+                    $arquivoTxt .= "Link: ".$projetofoto->getlink()."\n";
+                }
+
+                $arquivoTxt .= "*******************\n";
                 $arquivoTxt .= "Tarefas: \n";
                 /**
                  * @var Tarefa $tarefa
@@ -236,6 +248,7 @@ class BackupController extends AbstractController
 
             foreach($projetos as $key => $projeto) {
                 $projetos[$key]->serializarTarefas();
+                $projetos[$key]->serializarProjetosfotos();
             }
 
             $habitos = $this->habitosService->findAll($usuario);
@@ -285,6 +298,9 @@ class BackupController extends AbstractController
             foreach ($projetos as $key => $projeto) {
                 foreach ($projeto->getTarefas() as $key => $tarefa){
                     $entityManager->remove($tarefa);
+                }
+                foreach ($projeto->getProjetosfotos() as $key => $projetofoto){
+                    $entityManager->remove($projetofoto);
                 }
                 $entityManager->remove($projeto);
             }
@@ -344,6 +360,36 @@ class BackupController extends AbstractController
                 $entityManager->persist($projetoObj);
                 $projetoObj->getId();
 
+                foreach($projeto->projetosfotos as $key => $projetofoto) {
+                    $projetofotoObj = new Projetofoto();
+                    $projetofotoObj->setDescricao($projetofoto->descricao);
+                    $projetofotoObj->setLink($projetofoto->link);
+                    $timezone = new DateTimeZone($projetofoto->createdAt->timezone);
+                    // created at
+                    $createdAt = new DateTimeImmutable($projetofoto->createdAt->date, $timezone);
+                    $projetofotoObj->setCreatedAt($createdAt);
+                    // updated at
+                    if($projetofoto->updatedAt != null) {
+                        $timezone = new DateTimeZone($projetofoto->updatedAt->timezone);
+                        $updatedAt = new DateTimeImmutable($projetofoto->updatedAt->date, $timezone);
+                        $projetofotoObj->setUpdatedAt($updatedAt);
+                    }
+                    // deleted at
+                    if($projetofoto->deletedAt != null) {
+                        $timezone = new DateTimeZone($projetofoto->deletedAt->timezone);
+                        $deletedAt = new DateTimeImmutable($projetofoto->deletedAt->date, $timezone);
+                        $projetofotoObj->setDeletedAt($deletedAt);
+                    }
+                    //usuario / projeto
+                    $projetofotoObj->setUsuario($usuario);
+                    $projetofotoObj->setProjeto($projetoObj);
+                    // persist
+                    $entityManager->persist($projetofotoObj);
+                    $projetofotoObj->getId();
+                }
+                // persist todas projetosfotos
+
+                
                 foreach($projeto->tarefas as $key => $tarefa) {
                     $tarefaObj = new Tarefa();
                     $tarefaObj->setDescricao($tarefa->descricao);
@@ -542,6 +588,9 @@ class BackupController extends AbstractController
 
             foreach($dias as $key => $dia) {
                 $dias[$key]->serializarTarefas();
+            }
+            foreach($dias as $key => $dia) {
+                $dias[$key]->serializarProjetosfotos();
             }
 
             return new JsonResponse(compact('dias'), 200);

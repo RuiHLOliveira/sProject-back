@@ -67,6 +67,12 @@ class ProjetosController extends AbstractController
                     $projetos[$i]->serializarTarefas();
                 }
             }
+            $loadProjetosfotos = $request->query->get('loadProjetosfotos');
+            if(filter_var($loadProjetosfotos, FILTER_VALIDATE_BOOLEAN)) {
+                for ($i=0; $i < count($projetos); $i++) {
+                    $projetos[$i]->serializarProjetosfotos();
+                }
+            }
 
             return new JsonResponse($projetos);
         } catch (\Exception $e) {
