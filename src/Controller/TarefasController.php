@@ -107,7 +107,7 @@ class TarefasController extends AbstractController
             $requestData = json_decode($request->getContent());
             $this->validateCreateTarefaData($requestData);
 
-            $tarefa = $this->tarefasService->factoryTarefa($requestData->descricao, $requestData->motivo, $requestData->projeto, $requestData->hora, $usuario);
+            $tarefa = $this->tarefasService->factoryTarefa($requestData->descricao, $requestData->motivo, $requestData->projeto, $requestData->datahora, $usuario);
             $tarefa = $this->tarefasService->createNewTarefa($tarefa);
             return new JsonResponse($tarefa, Response::HTTP_CREATED);
         } catch (\Exception $e) {
@@ -140,9 +140,11 @@ class TarefasController extends AbstractController
             }
 
             $tarefa->setDescricao($requestData->descricao);
-            $tarefa->setMotivo($requestData->motivo);
-            if($requestData->hora != '') {
-                $tarefa->setHora(new DateTimeImmutable($requestData->hora));
+            if($requestData->motivo != null) $tarefa->setMotivo($requestData->motivo);
+            if($requestData->datahora != '') {
+                $tarefa->setDatahora(new DateTimeImmutable($requestData->datahora));
+            } else {
+                $tarefa->setDatahora(null);
             }
             $this->tarefasService->atualizaTarefasUseCase($tarefa);
 

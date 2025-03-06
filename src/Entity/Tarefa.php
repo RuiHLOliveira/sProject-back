@@ -33,7 +33,9 @@ class Tarefa extends JsonSerializableEntity
         $array['situacao'] = $this->getSituacao();
         $array['prioridade'] = $this->getPrioridade();
         $array['situacaoDescritivo'] = $this->getSituacaoDescritivo();
-        $array['hora'] = $this->getHora() != null ? $this->getHora()->format('H:i') : null;
+        $array['datahora'] = $this->getDatahora() != null ? $this->getDatahora()->format('Y-m-d H:i:s') : null;
+        $array['datahoraFormatted'] = $this->getDatahora() != null ? $this->getDatahora()->format('d/m/Y H:i') : null;
+        $array['datahoraWeekday'] = $this->weekdayToPtbr($this->getDatahora() != null ? $this->getDatahora()->format('D') : null);
         $array['meuDia'] = $this->getMeuDia() != null ? $this->getMeuDia()->format('Y-m-d H:i:s') : null;
         $array['meuDiaObj'] = $this->getMeuDia();
 
@@ -47,6 +49,21 @@ class Tarefa extends JsonSerializableEntity
     }
 
     protected $serializarProjeto;
+
+    public function weekdayToPtbr($weekdayEnUs)
+    {
+        $array = [
+            'Sun' => 'Dom',
+            'Mon' => 'Seg',
+            'Tue' => 'Ter',
+            'Wed' => 'Qua',
+            'Thu' => 'Qui',
+            'Thur' => 'Qui',
+            'Fri' => 'Sex',
+            'Sat' => 'Sab',
+        ];
+        return $array[$weekdayEnUs];
+    }
 
     public function serializarProjeto() {
         // $this->getProjeto();
@@ -104,7 +121,7 @@ class Tarefa extends JsonSerializableEntity
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
-    protected $hora;
+    protected $datahora;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
@@ -179,14 +196,14 @@ class Tarefa extends JsonSerializableEntity
         return $this;
     }
 
-    public function getHora(): ?DateTimeImmutable
+    public function getDatahora(): ?DateTimeImmutable
     {
-        return $this->hora;
+        return $this->datahora;
     }
 
-    public function setHora(?DateTimeImmutable $hora): self
+    public function setDatahora(?DateTimeImmutable $datahora): self
     {
-        $this->hora = $hora;
+        $this->datahora = $datahora;
 
         return $this;
     }

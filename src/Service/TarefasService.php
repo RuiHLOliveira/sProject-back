@@ -87,11 +87,11 @@ class TarefasService
      * @param string $descricao
      * @param string $motivo
      * @param int $projetoId
-     * @param string $hora
+     * @param string $datahora
      * @param User $usuario
      * @return Tarefa
      */
-    public function factoryTarefa($descricao, $motivo, $projetoId, $hora, $usuario) {
+    public function factoryTarefa($descricao, $motivo, $projetoId, $datahora, $usuario) {
 
         $projeto = $this->doctrine->getRepository(Projeto::class)->findOneBy([
             'id' => $projetoId,
@@ -107,8 +107,8 @@ class TarefasService
         $tarefa->setMotivo($motivo);
         $tarefa->setSituacao(0);
         $tarefa->setProjeto($projeto);
-        if($hora != ''){
-            $tarefa->setHora(new DateTimeImmutable($hora));
+        if($datahora != ''){
+            $tarefa->setDatahora(new DateTimeImmutable($datahora));
         }
         
         
