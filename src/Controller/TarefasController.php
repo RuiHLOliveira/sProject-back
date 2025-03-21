@@ -163,7 +163,6 @@ class TarefasController extends AbstractController
         try {
             $usuario = $this->getUser();
             $requestData = json_decode($request->getContent());
-            $this->validateUpdateTarefaData($requestData);
             $tarefa = $this->tarefasService->find($id, $usuario);
             if($tarefa == null) {
                 throw new NotFoundHttpException('Tarefa não encontrada.');

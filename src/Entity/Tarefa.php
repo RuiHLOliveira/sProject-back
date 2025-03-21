@@ -177,7 +177,7 @@ class Tarefa extends JsonSerializableEntity
         return $this->descricao;
     }
 
-    public function setDescricao(string $descricao): self
+    public function setDescricao(?string $descricao): self
     {
         $this->descricao = $descricao;
 
@@ -189,7 +189,7 @@ class Tarefa extends JsonSerializableEntity
         return $this->motivo;
     }
 
-    public function setMotivo(string $motivo): self
+    public function setMotivo(?string $motivo): self
     {
         $this->motivo = $motivo;
 
@@ -261,7 +261,7 @@ class Tarefa extends JsonSerializableEntity
         return $this->situacao;
     }
 
-    public function setSituacao(int $situacao): self
+    public function setSituacao(?int $situacao): self
     {
         $this->situacao = $situacao;
         $this->fillSituacaoDescritivo();
@@ -274,7 +274,7 @@ class Tarefa extends JsonSerializableEntity
         return $this->situacaoDescritivo;
     }
 
-    public function setSituacaoDescritivo(string $situacaoDescritivo): self
+    public function setSituacaoDescritivo(?string $situacaoDescritivo): self
     {
         $this->situacaoDescritivo = $situacaoDescritivo;
         return $this;
@@ -285,7 +285,7 @@ class Tarefa extends JsonSerializableEntity
         return $this->prioridade;
     }
 
-    public function setPrioridade(int $prioridade): self
+    public function setPrioridade(?int $prioridade): self
     {
         $this->prioridade = $prioridade;
 
