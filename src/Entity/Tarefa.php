@@ -52,6 +52,7 @@ class Tarefa extends JsonSerializableEntity
 
     public function weekdayToPtbr($weekdayEnUs)
     {
+        if($weekdayEnUs == null) return null;
         $array = [
             'Sun' => 'Dom',
             'Mon' => 'Seg',

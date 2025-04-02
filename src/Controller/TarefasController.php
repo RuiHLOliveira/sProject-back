@@ -134,10 +134,7 @@ class TarefasController extends AbstractController
             $requestData = json_decode($request->getContent());
             $this->validateUpdateTarefaData($requestData);
 
-            $tarefa = $this->tarefasService->find($id, $usuario);
-            if($tarefa == null) {
-                throw new NotFoundHttpException('Tarefa não encontrada.');
-            }
+            $tarefa = $this->validateTarefaExiste($id, $usuario);
 
             $tarefa->setDescricao($requestData->descricao);
             if($requestData->motivo != null) $tarefa->setMotivo($requestData->motivo);
@@ -163,10 +160,7 @@ class TarefasController extends AbstractController
         try {
             $usuario = $this->getUser();
             $requestData = json_decode($request->getContent());
-            $tarefa = $this->tarefasService->find($id, $usuario);
-            if($tarefa == null) {
-                throw new NotFoundHttpException('Tarefa não encontrada.');
-            }
+            $tarefa = $this->validateTarefaExiste($id, $usuario);
             $tarefa->setPrioridade($requestData->prioridade);
             $this->tarefasService->atualizaTarefasUseCase($tarefa);
             return new JsonResponse();
@@ -182,10 +176,7 @@ class TarefasController extends AbstractController
     {
         try {
             $usuario = $this->getUser();
-            $tarefa = $this->tarefasService->find($id, $usuario);
-            if($tarefa == null) {
-                throw new NotFoundHttpException('Tarefa não encontrada.');
-            }
+            $tarefa = $this->validateTarefaExiste($id, $usuario);
             $tarefa = $this->tarefasService->concluir($tarefa, $usuario);
             $tarefa = $this->tarefasService->find($tarefa->getId(), $usuario);
             return new JsonResponse($tarefa, Response::HTTP_OK);
@@ -194,61 +185,61 @@ class TarefasController extends AbstractController
         }
     }
 
-     /**
-     * @Route("/tarefas/{id}/meu-dia", name="app_tarefas_adicionar_meu_dia", methods={"POST"})
-     */
-    public function adicionarAoMeuDiaTarefa($id, Request $request, ManagerRegistry $doctrine): JsonResponse
-    {
-        try {
-            $usuario = $this->getUser();
-            $tarefa = $this->tarefasService->find($id, $usuario);
-            if($tarefa == null) {
-                throw new NotFoundHttpException('Tarefa não encontrada.');
-            }
-            $tarefa = $this->tarefasService->adicionarAoMeuDia($tarefa, $usuario);
-            $tarefa = $this->tarefasService->find($tarefa->getId(), $usuario);
-            return new JsonResponse($tarefa, Response::HTTP_OK);
-        } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
-    }
+    //  /**
+    //  * @Route("/tarefas/{id}/meu-dia", name="app_tarefas_adicionar_meu_dia", methods={"POST"})
+    //  */
+    // public function adicionarAoMeuDiaTarefa($id, Request $request, ManagerRegistry $doctrine): JsonResponse
+    // {
+    //     try {
+    //         $usuario = $this->getUser();
+    //         $tarefa = $this->validateTarefaExiste($id, $usuario);
+    //         $tarefa = $this->tarefasService->adicionarAoMeuDia($tarefa, $usuario);
+    //         $tarefa = $this->tarefasService->find($tarefa->getId(), $usuario);
+    //         return new JsonResponse($tarefa, Response::HTTP_OK);
+    //     } catch (\Exception $e) {
+    //         return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+    //     }
+    // }
     
-     /**
-     * @Route("/tarefas/{id}/remover-meu-dia", name="app_tarefas_remover_meu_dia", methods={"POST"})
-     */
-    public function removerMeuDiaTarefa($id, Request $request, ManagerRegistry $doctrine): JsonResponse
-    {
-        try {
-            $usuario = $this->getUser();
-            $tarefa = $this->tarefasService->find($id, $usuario);
-            if($tarefa == null) {
-                throw new NotFoundHttpException('Tarefa não encontrada.');
-            }
-            $tarefa = $this->tarefasService->removerMeuDia($tarefa, $usuario);
-            $tarefa = $this->tarefasService->find($tarefa->getId(), $usuario);
-            return new JsonResponse($tarefa, Response::HTTP_OK);
-        } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
-        }
-    }
+    //  /**
+    //  * @Route("/tarefas/{id}/remover-meu-dia", name="app_tarefas_remover_meu_dia", methods={"POST"})
+    //  */
+    // public function removerMeuDiaTarefa($id, Request $request, ManagerRegistry $doctrine): JsonResponse
+    // {
+    //     try {
+    //         $usuario = $this->getUser();
+    //         $tarefa = $this->validateTarefaExiste($id, $usuario);
+    //         $tarefa = $this->tarefasService->removerMeuDia($tarefa, $usuario);
+    //         $tarefa = $this->tarefasService->find($tarefa->getId(), $usuario);
+    //         return new JsonResponse($tarefa, Response::HTTP_OK);
+    //     } catch (\Exception $e) {
+    //         return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+    //     }
+    // }
     
     /**
-     * @Route("/tarefas/{id}/falhar", name="app_tarefas_falhar", methods={"POST"})
+     * @Route("/tarefas/{id}/reagendar-dia-seguinte", name="app_tarefas_falhar", methods={"POST"})
      */
-    public function falharTarefa($id, Request $request, ManagerRegistry $doctrine): JsonResponse
+    public function reagendarDiaSeguinte($id, Request $request, ManagerRegistry $doctrine): JsonResponse
     {
         try {
             $usuario = $this->getUser();
-            $tarefa = $this->tarefasService->find($id, $usuario);
-            if($tarefa == null) {
-                throw new NotFoundHttpException('Tarefa não encontrada.');
-            }
-            $tarefa = $this->tarefasService->falhar($tarefa, $usuario);
+            $tarefa = $this->validateTarefaExiste($id, $usuario);
+            $tarefa = $this->tarefasService->reagendarDiaSeguinte($tarefa, $usuario);
             $tarefa = $this->tarefasService->find($tarefa->getId(), $usuario);
             return new JsonResponse($tarefa, Response::HTTP_OK);
         } catch (\Exception $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
+    }
+
+    private function validateTarefaExiste($id, $usuario)
+    {
+        $tarefa = $this->tarefasService->find($id, $usuario);
+        if($tarefa == null) {
+            throw new NotFoundHttpException('Tarefa não encontrada.');
+        }
+        return $tarefa;
     }
 
 }

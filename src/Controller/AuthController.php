@@ -132,15 +132,15 @@ class AuthController extends AbstractController
         }
     }
 
-    private function makeNewTokens(User $user) {
-        
+    private function makeNewTokens(User $user)
+    {
         $payloadJwt = [
             "username" => $user->getUserIdentifier(),
             "exp"  => (new \DateTime())->modify("+50 seconds")->getTimestamp(),
         ];
         $payloadRefresh = [
             "username" => $user->getUserIdentifier(),
-            "exp"  => (new \DateTime())->modify("+2160 minutes")->getTimestamp(),
+            "exp"  => (new \DateTime())->modify("+3 days")->getTimestamp(),
         ];
 
         $jwt = JWT::encode($payloadJwt, $this->getParameter('jwt_secret'), 'HS256');

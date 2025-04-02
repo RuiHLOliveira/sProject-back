@@ -6,7 +6,10 @@ use App\Entity\Projeto;
 use App\Entity\User;
 use DateTimeImmutable;
 use App\Entity\Tarefa;
+use DateInterval;
+use DateTime;
 use Doctrine\Persistence\ManagerRegistry;
+use LogicException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
@@ -136,29 +139,6 @@ class TarefasService
         }
     }
 
-    
-    public function editarUseCase(Tarefa $tarefa, User $usuario){
-        
-        try {
-            $entityManager = $this->doctrine->getManager();
-            $entityManager->getConnection()->beginTransaction();
-
-            $tarefa->concluir();
-            $tarefa->setUpdatedAt(new DateTimeImmutable());
-            $entityManager->persist($tarefa);
-            $entityManager->flush();
-
-            $entityManager->getConnection()->commit();
-
-
-            return $tarefa;
-
-        } catch (\Throwable $th) {
-            $entityManager->getConnection()->rollback();
-            throw $th;
-        }
-    }
-
     public function concluir(Tarefa $tarefa, User $usuario){
         
         try {
@@ -181,57 +161,80 @@ class TarefasService
         }
     }
 
-    public function adicionarAoMeuDia(Tarefa $tarefa, User $usuario){
-        try {
-            $entityManager = $this->doctrine->getManager();
-            $entityManager->getConnection()->beginTransaction();
-            $tarefa->adicionarAoMeuDia();
-            $tarefa->setUpdatedAt(new DateTimeImmutable());
-            $entityManager->persist($tarefa);
-            $entityManager->flush();
-            $entityManager->getConnection()->commit();
-            return $tarefa;
-        } catch (\Throwable $th) {
-            $entityManager->getConnection()->rollback();
-            throw $th;
-        }
-    }
+    // public function adicionarAoMeuDia(Tarefa $tarefa, User $usuario){
+    //     try {
+    //         $entityManager = $this->doctrine->getManager();
+    //         $entityManager->getConnection()->beginTransaction();
+    //         $tarefa->adicionarAoMeuDia();
+    //         $tarefa->setUpdatedAt(new DateTimeImmutable());
+    //         $entityManager->persist($tarefa);
+    //         $entityManager->flush();
+    //         $entityManager->getConnection()->commit();
+    //         return $tarefa;
+    //     } catch (\Throwable $th) {
+    //         $entityManager->getConnection()->rollback();
+    //         throw $th;
+    //     }
+    // }
     
-    public function removerMeuDia(Tarefa $tarefa, User $usuario){
+    // public function removerMeuDia(Tarefa $tarefa, User $usuario){
+    //     try {
+    //         $entityManager = $this->doctrine->getManager();
+    //         $entityManager->getConnection()->beginTransaction();
+    //         $tarefa->removerMeuDia();
+    //         $tarefa->setUpdatedAt(new DateTimeImmutable());
+    //         $entityManager->persist($tarefa);
+    //         $entityManager->flush();
+    //         $entityManager->getConnection()->commit();
+    //         return $tarefa;
+    //     } catch (\Throwable $th) {
+    //         $entityManager->getConnection()->rollback();
+    //         throw $th;
+    //     }
+    // }
+
+    // public function falhar(Tarefa $tarefa, User $usuario)
+    // {
+    //     $entityManager = $this->doctrine->getManager();
+    //     try {
+    //         $entityManager->getConnection()->beginTransaction();
+
+    //         $tarefa->falhar();
+    //         $tarefa->setUpdatedAt(new DateTimeImmutable());
+    //         $entityManager->persist($tarefa);
+    //         $entityManager->flush();
+
+    //         $entityManager->getConnection()->commit();
+
+    //         return $tarefa;
+
+    //     } catch (\Throwable $th) {
+    //         $entityManager->getConnection()->rollback();
+    //         throw $th;
+    //     }
+    // }
+
+    public function reagendarDiaSeguinte(Tarefa $tarefa, User $usuario)
+    {
+        $entityManager = $this->doctrine->getManager();
         try {
-            $entityManager = $this->doctrine->getManager();
-            $entityManager->getConnection()->beginTransaction();
-            $tarefa->removerMeuDia();
-            $tarefa->setUpdatedAt(new DateTimeImmutable());
-            $entityManager->persist($tarefa);
-            $entityManager->flush();
-            $entityManager->getConnection()->commit();
-            return $tarefa;
-        } catch (\Throwable $th) {
-            $entityManager->getConnection()->rollback();
-            throw $th;
-        }
-    }
-    
-    
-
-    public function falhar(Tarefa $tarefa, User $usuario){
-        
-        try {
-            $entityManager = $this->doctrine->getManager();
             $entityManager->getConnection()->beginTransaction();
 
-            $tarefa->falhar();
-            $tarefa->setUpdatedAt(new DateTimeImmutable());
-            $entityManager->persist($tarefa);
-            $entityManager->flush();
+            $datetime = $tarefa->getDatahora();
+            if($datetime == null) throw new LogicException("Não é possível reagendar uma tarefa não agendada.");
+            $datetime = new DateTime($datetime->format("Y-m-d H:i:s"));
+            $datetime->add(new DateInterval("P1D"));
+            $datetime = new DateTimeImmutable($datetime->format("Y-m-d H:i:s"));
+
+            $tarefa->setDatahora($datetime);
+
+            $this->atualizaTarefasUseCase($tarefa);
 
             $entityManager->getConnection()->commit();
 
-
             return $tarefa;
 
-        } catch (\Throwable $th) {
+        } catch (\Throwable $th){
             $entityManager->getConnection()->rollback();
             throw $th;
         }
