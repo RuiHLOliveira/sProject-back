@@ -86,6 +86,23 @@ class TarefasService
         }
     }
 
+    public function deleteTarefaUseCase(Tarefa $tarefa, User $usuario)
+    {
+        $entityManager = $this->doctrine->getManager();
+        try {
+            $entityManager->getConnection()->beginTransaction();
+
+            $entityManager->remove($tarefa);
+            $entityManager->flush();
+            $entityManager->getConnection()->commit();
+            return $tarefa;
+        } catch (\Throwable $th) {
+            $entityManager->getConnection()->rollback();
+            throw $th;
+        }
+    }
+
+
     /**
      * @param string $descricao
      * @param string $motivo

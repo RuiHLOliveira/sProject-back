@@ -152,6 +152,27 @@ class TarefasController extends AbstractController
         }
     }
 
+    
+    /**
+     * @Route("/tarefas/{id}", name="app_tarefas_delete", methods={"DELETE"})
+     */
+    public function delete($id, Request $request): JsonResponse
+    {
+        try {
+            $usuario = $this->getUser();
+            $requestData = json_decode($request->getContent());
+
+            $tarefa = $this->validateTarefaExiste($id, $usuario);
+
+            $this->tarefasService->deleteTarefaUseCase($tarefa, $usuario);
+
+            return new JsonResponse();
+            
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
     /**
      * @Route("/tarefas/{id}/prioridade", name="app_tarefas_update_prioridade", methods={"PUT"})
      */
