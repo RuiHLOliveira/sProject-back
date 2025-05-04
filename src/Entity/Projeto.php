@@ -28,6 +28,7 @@ class Projeto implements JsonSerializable
             'prioridade' => $this->getPrioridade(),
             'prioridadeDescritivo' => $this->getPrioridadeDescritivo(),
             'dataPrazo' => $this->getDataPrazo() != null ? $this->getDataPrazo()->format('Y-m-d H:i:s') : '',
+            'tags' => $this->getTags(),
             'createdAt' => $this->getCreatedAt(),
             'updatedAt' => $this->getUpdatedAt(),
             'deletedAt' => $this->getDeletedAt(),
@@ -182,6 +183,11 @@ class Projeto implements JsonSerializable
      * @ORM\Column(type="boolean", options={"default":false})
      */
     private $fixado;
+
+    /**
+     * @ORM\Column(type="json",  nullable=true, options={"default":null})
+     */
+    private $tags;
 
     protected $prioridadeDescritivo;
     
@@ -400,4 +406,19 @@ class Projeto implements JsonSerializable
         $this->fixado = $fixado;
         return $this;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getTags()
+    {
+        return $this->tags;
+    }
+
+    public function setTags($tags): self
+    {
+        $this->tags = $tags;
+        return $this;
+    }
+
 }

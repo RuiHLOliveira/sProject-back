@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Tag;
 use JsonSerializable;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
@@ -74,6 +75,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
      * @ORM\OneToMany(targetEntity=InboxItem::class, mappedBy="usuario")
      */
     private $inboxItems;
+    
+    /**
+     * @ORM\OneToMany(targetEntity=Tag::class, mappedBy="usuario")
+     */
+    private $tags;
+    
 
     public function __construct()
     {
@@ -82,6 +89,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
         $this->configuracoes = new ArrayCollection();
         $this->historicos = new ArrayCollection();
         $this->inboxItems = new ArrayCollection();
+        $this->tags = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -322,4 +330,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
 
         return $this;
     }
+
+    
+    /**
+     * @return Collection<int, Tag>
+     */
+    public function getTags(): Collection
+    {
+        return $this->tags;
+    }
+
+    public function addTag(Tag $tag): self
+    {
+        if (!$this->tags->contains($tag)) {
+            $this->tags[] = $tag;
+            $tag->setUsuario($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTag(Tag $tag): self
+    {
+        if ($this->tags->removeElement($tag)) {
+            // set the owning side to null (unless already changed)
+            if ($tag->getUsuario() === $this) {
+                $tag->setUsuario(null);
+            }
+        }
+
+        return $this;
+    }
+
 }

@@ -6,7 +6,9 @@ use Exception;
 use DateTimeImmutable;
 use App\Entity\Projeto;
 use App\Service\ProjetosService;
+use App\Service\TagsService;
 use Doctrine\Persistence\ManagerRegistry;
+use LogicException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -22,9 +24,17 @@ class ProjetosController extends AbstractController
      */
     private $projetosService;
 
-    public function __construct(ProjetosService $projetosService)
-    {
+    /**
+     * @var TagsService
+     */
+    private $tagsService;
+
+    public function __construct(
+        ProjetosService $projetosService,
+        TagsService $tagsService
+    ) {
         $this->projetosService = $projetosService;
+        $this->tagsService = $tagsService;
     }
 
     /**
@@ -178,6 +188,62 @@ class ProjetosController extends AbstractController
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (\Error $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * @Route("/projetos/{id}/tags", name="app_projetos_update_tags", methods={"PUT"})
+     */
+    public function updateTags($id, Request $request): JsonResponse
+    {
+        try {
+            $requestContent = $request->getContent();
+            $requestObj = json_decode($requestContent);
+            $usuario = $this->getUser();
+
+            //$this->validateUpdate($requestObj);
+            $projeto = $this->projetosService->findOne($usuario, $id);
+            //$projeto = $this->fillUpdateProjeto($requestObj, $projeto);
+
+            // TODO validar as tags todas
+            $tags = $requestObj->tags;
+            $tags = $this->filtraTagsDados($tags);
+            $this->validaTags($projeto, $tags);
+
+            $projeto->setTags($tags);
+            $projeto = $this->projetosService->updateProjeto($projeto, $usuario);
+
+            return new JsonResponse($projeto, Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        } catch (\Error $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    private function filtraTagsDados($tags)
+    {
+        foreach ($tags as $key => $tag) {
+            unset($tags[$key]);
+            $tags[$key] = [
+                'id' => $tag->id,
+                'descricao' => $tag->descricao,
+                'cor' => $tag->cor,
+            ];
+        }
+        return $tags;
+    }
+
+    private function validaTags(Projeto $projeto, array $tags)
+    {
+        // tags são as mesmas?
+        // tags passadas existem?
+        $oldTags = $projeto->getTags();
+        if(json_encode($tags) == json_encode($oldTags)) return;
+        foreach ($tags as $key => $tag) {
+            $tagDb = $this->tagsService->find($tag['id'], $projeto->getUsuario());
+            if($tagDb == null) throw new LogicException("Tag inexistente!");
+            if($tagDb->getDescricao() != $tag['descricao']) throw new LogicException("Tag incorreta!");
         }
     }
 
