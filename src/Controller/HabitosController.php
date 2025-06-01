@@ -19,7 +19,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 class HabitosController extends AbstractController
 {
     
-    private $habitosService;
+    private HabitosService $habitosService;
 
     public function __construct(HabitosService $habitosService)
     {
@@ -144,12 +144,14 @@ class HabitosController extends AbstractController
     public function concluiHabito($id, Request $request, ManagerRegistry $doctrine): JsonResponse
     {
         try {
+            $requestData = json_decode($request->getContent());
             $usuario = $this->getUser();
+            $textoObservacao = $requestData->textoObservacao;
             $habito = $this->habitosService->find($id, $usuario);
             if($habito == null) {
-                throw new NotFoundHttpException('Habito não encontrada.');
+                throw new NotFoundHttpException('Habito não encontrado.');
             }
-            $habito = $this->habitosService->concluir($habito, $usuario);
+            $habito = $this->habitosService->concluir($textoObservacao, $habito, $usuario);
             $habito = $this->habitosService->find($habito->getId(), $usuario);
             return new JsonResponse($habito, Response::HTTP_OK);
         } catch (\Exception $e) {

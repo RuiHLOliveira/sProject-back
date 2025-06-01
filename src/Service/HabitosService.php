@@ -6,20 +6,20 @@ use App\Entity\User;
 use DateTimeImmutable;
 use App\Entity\Habito;
 use App\Entity\HabitoRealizado;
+use App\Entity\Historico;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class HabitosService
 {
-    
-    private $doctrine;
-    private $encoder;
+    private ManagerRegistry $doctrine;
+    protected HistoricosService $historicosService;
 
-    public function __construct(ManagerRegistry $doctrine,  UserPasswordEncoderInterface $encoder)
-    {
+    public function __construct(
+        ManagerRegistry $doctrine,
+        HistoricosService $historicosService
+    ) {
         $this->doctrine = $doctrine;
-        $this->encoder = $encoder;
+        $this->historicosService = $historicosService;
     }
 
     /**
@@ -54,8 +54,6 @@ class HabitosService
     {
         try {
             $habitos = $this->findAll($usuario, $filters, $orderBy);
-
-
             foreach ($relations as $key => $relation) {
                 for ($i=0; $i < count($habitos); $i++) {
                     if($relation == 'habitoRealizados'){
@@ -63,7 +61,6 @@ class HabitosService
                     }
                 }
             }
-
             return $habitos;
         } catch (\Exception $e) {
             throw $e;
@@ -76,8 +73,8 @@ class HabitosService
      */
     public function atualizaHabitosUseCase(Habito $habito): Habito
     {
+        $entityManager = $this->doctrine->getManager();
         try {
-            $entityManager = $this->doctrine->getManager();
             $entityManager->getConnection()->beginTransaction();
 
             $habito->setUpdatedAt(new DateTimeImmutable());
@@ -115,8 +112,8 @@ class HabitosService
 
     public function createNewHabito(Habito $habito)
     {
+        $entityManager = $this->doctrine->getManager();
         try {
-            $entityManager = $this->doctrine->getManager();
             $entityManager->getConnection()->beginTransaction();
 
             $habito->setCreatedAt(new DateTimeImmutable());
@@ -135,10 +132,10 @@ class HabitosService
     }
 
     
-    public function editarUseCase(Habito $habito, User $usuario){
-        
+    public function editarUseCase(Habito $habito, User $usuario)
+    {
+        $entityManager = $this->doctrine->getManager();
         try {
-            $entityManager = $this->doctrine->getManager();
             $entityManager->getConnection()->beginTransaction();
 
             $habito->concluir();
@@ -157,15 +154,14 @@ class HabitosService
         }
     }
 
-    public function concluir(Habito $habito, User $usuario){
-        
+    public function concluir(string $textoObservacao, Habito $habito, User $usuario)
+    {
+        $entityManager = $this->doctrine->getManager();
         try {
+            $entityManager->getConnection()->beginTransaction();
             /**
              * Concluir é criar um novo registro de que o hábito foi feito neste dia
              */
-            $entityManager = $this->doctrine->getManager();
-            $entityManager->getConnection()->beginTransaction();
-
             $habitoRealizado = new HabitoRealizado();
             $habitoRealizado->setRealizadoEm(new DateTimeImmutable());
             $habitoRealizado->setCreatedAt(new DateTimeImmutable());
@@ -173,6 +169,9 @@ class HabitosService
             $habitoRealizado->setHabito($habito);
 
             $entityManager->persist($habitoRealizado);
+
+            $historicoCriado = $this->criaHistoricoHabitoConcluido($textoObservacao, $habito, $usuario);
+
             $entityManager->flush();
 
             $entityManager->getConnection()->commit();
@@ -184,28 +183,18 @@ class HabitosService
             throw $th;
         }
     }
-    
 
-    // public function falhar(Habito $habito, User $usuario){
-        
-    //     try {
-    //         $entityManager = $this->doctrine->getManager();
-    //         $entityManager->getConnection()->beginTransaction();
-
-    //         $habito->falhar();
-    //         $habito->setUpdatedAt(new DateTimeImmutable());
-    //         $entityManager->persist($habito);
-    //         $entityManager->flush();
-
-    //         $entityManager->getConnection()->commit();
-
-
-    //         return $habito;
-
-    //     } catch (\Throwable $th) {
-    //         $entityManager->getConnection()->rollback();
-    //         throw $th;
-    //     }
-    // }
-
+    protected function criaHistoricoHabitoConcluido ($textoObservacao, $habito, $usuario) : Historico
+    {
+        $descricaoHistorico = 'Hábito concluído';
+        $this->historicosService->buscaEValidaModuloTipoId($usuario, $habito->getId(), Historico::MODULO_TIPO_HABITO);
+        $historico = $this->historicosService->factoryNovoHistorico(
+            $habito->getId(),
+            Historico::MODULO_TIPO_HABITO,
+            $descricaoHistorico
+        );
+        $historico->setTexto($textoObservacao);
+        $historicoCriado = $this->historicosService->create($usuario, $historico);
+        return $historicoCriado;
+    }
 }
