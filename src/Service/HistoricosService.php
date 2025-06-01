@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\User;
 use DateTimeImmutable;
 use App\Entity\Historico;
+use App\Service\HabitosService;
 use App\Service\TarefasService;
 use App\Service\ProjetosService;
 use Doctrine\Persistence\ManagerRegistry;
@@ -15,15 +16,18 @@ class HistoricosService
     private ManagerRegistry $doctrine;
     private ProjetosService $projetosService;
     private TarefasService $tarefasService;
+    private HabitosService $habitosService;
 
     public function __construct(
         ManagerRegistry $doctrine,
         ProjetosService $projetosService,
-        TarefasService $tarefasService
+        TarefasService $tarefasService,
+        HabitosService $habitosService
     ) {
         $this->doctrine = $doctrine;
         $this->projetosService = $projetosService;
         $this->tarefasService = $tarefasService;
+        $this->habitosService = $habitosService;
     }
 
     /**
@@ -68,7 +72,6 @@ class HistoricosService
             throw $th;
         }
     }
-
 
     /**
      * @param User $usuario
@@ -120,8 +123,11 @@ class HistoricosService
             case Historico::MODULO_TIPO_PROJETO:
                 $entidadeModulo = $this->projetosService->findOne($usuario, $moduloId);
                 break;
-            case Historico::MODULO_TIPO_PROJETO:
-                $entidadeModulo = $this->projetosService->findOne($usuario, $moduloId);
+            case Historico::MODULO_TIPO_TAREFA:
+                $entidadeModulo = $this->tarefasService->find($moduloId, $usuario);
+                break;
+            case Historico::MODULO_TIPO_HABITO:
+                $entidadeModulo = $this->habitosService->find($moduloId, $usuario);
                 break;
             default:
                 throw new BadRequestException('Modulo não suportado');
