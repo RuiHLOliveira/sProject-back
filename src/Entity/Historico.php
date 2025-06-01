@@ -11,12 +11,13 @@ use JsonSerializable;
  */
 class Historico implements JsonSerializable
 {
-
     public const MODULO_TIPO_PROJETO = 1;
     public const MODULO_TIPO_TAREFA = 2;
+    public const MODULO_TIPO_HABITO = 3;
     public const MODULOS_SUPORTADOS = [
         self::MODULO_TIPO_PROJETO,
         self::MODULO_TIPO_TAREFA,
+        self::MODULO_TIPO_HABITO,
     ];
 
     public function jsonSerialize()
@@ -25,6 +26,7 @@ class Historico implements JsonSerializable
         $array = [
             'id' => $this->getId(),
             'descricao' => $this->getDescricao(),
+            'texto' => $this->getTexto(),
             'moduloId' => $this->getModuloId(),
             'moduloTipo' => $this->getModuloTipo(),
             'createdAt' => $this->getCreatedAt(),
@@ -65,6 +67,11 @@ class Historico implements JsonSerializable
      * @ORM\Column(type="text")
      */
     private $descricao;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $texto;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="historicos")
@@ -133,6 +140,18 @@ class Historico implements JsonSerializable
     public function setDescricao(string $descricao): self
     {
         $this->descricao = $descricao;
+
+        return $this;
+    }
+
+    public function getTexto(): ?string
+    {
+        return $this->texto;
+    }
+
+    public function setTexto(string $texto): self
+    {
+        $this->texto = $texto;
 
         return $this;
     }
