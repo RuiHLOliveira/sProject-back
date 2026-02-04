@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use App\Entity\InboxItem;
 use PhpParser\JsonDecoder;
 use App\Service\InboxItemService;
-use App\Service\CategoriaItemService;
+use App\Service\InboxitemCategoriaService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,14 +22,14 @@ class InboxItemController extends AbstractController
 {
     
     private $inboxItemService;
-    private $categoriaItemService;
+    private $inboxitemCategoriaService;
 
     public function __construct(
         InboxItemService $inboxItemService,
-        CategoriaItemService $categoriaItemService
+        InboxitemCategoriaService $inboxitemCategoriaService
     ) {
         $this->inboxItemService = $inboxItemService;
-        $this->categoriaItemService = $categoriaItemService;
+        $this->inboxitemCategoriaService = $inboxitemCategoriaService;
     }
 
     private function getOrderBy(Request $request)
@@ -46,12 +46,12 @@ class InboxItemController extends AbstractController
     private function getFilters(Request $request, User $usuario): array
     {
         $filters = [];
-        $categoriaItem = $request->query->get('categoriaItem');
-        if($categoriaItem != null){
-            if($categoriaItem > 0){
-                $filters['categoriaItem'] = $this->categoriaItemService->find($categoriaItem, $usuario);
-            } elseif ($categoriaItem == 0){
-                $filters['categoriaItem'] = null;
+        $inboxitemCategoria = $request->query->get('inboxitemCategoria');
+        if($inboxitemCategoria != null){
+            if($inboxitemCategoria > 0){
+                $filters['inboxitemCategoria'] = $this->inboxitemCategoriaService->find($inboxitemCategoria, $usuario);
+            } elseif ($inboxitemCategoria == 0){
+                $filters['inboxitemCategoria'] = null;
             }
         }
         return $filters;
@@ -127,7 +127,7 @@ class InboxItemController extends AbstractController
         if( !property_exists($requestData, 'nome') || $requestData->nome == ''){
             throw new BadRequestHttpException("Nome não enviada.");
         }
-        if( !property_exists($requestData, 'categoriaItem') || $requestData->categoriaItem == ''){
+        if( !property_exists($requestData, 'inboxitemCategoria') || $requestData->inboxitemCategoria == ''){
             throw new BadRequestHttpException("Categoria não enviada.");
         }
         // if( !property_exists($requestData, 'origem') || $requestData->origem == ''){
@@ -152,8 +152,8 @@ class InboxItemController extends AbstractController
 
             $inboxItem->setNome($requestData->nome);
             $inboxItem->setLink($requestData->link);
-            $categoriaItem = $this->categoriaItemService->find($requestData->categoriaItem->id, $usuario);
-            $inboxItem->setCategoriaItem($categoriaItem);
+            $inboxitemCategoria = $this->inboxitemCategoriaService->find($requestData->inboxitemCategoria->id, $usuario);
+            $inboxItem->setInboxitemCategoria($inboxitemCategoria);
             $inboxItem->setAcao($requestData->acao);
             $this->inboxItemService->atualizainboxItemUseCase($inboxItem);
 

@@ -3,14 +3,14 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use App\Repository\CategoriaItemRepository;
+use App\Repository\InboxitemCategoriaRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * @ORM\Entity(repositoryClass=CategoriaItemRepository::class)
+ * @ORM\Entity(repositoryClass=InboxitemCategoriaRepository::class)
  */
-class CategoriaItem extends JsonSerializableEntity
+class InboxitemCategoria extends JsonSerializableEntity
 {
     public function jsonSerialize()
     {
@@ -53,7 +53,7 @@ class CategoriaItem extends JsonSerializableEntity
     private $inboxItems;
 
     /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="categoriaItems")
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="inboxitemCategorias")
      * @ORM\JoinColumn(nullable=false)
      */
     protected $usuario;
@@ -140,7 +140,7 @@ class CategoriaItem extends JsonSerializableEntity
     {
         if (!$this->inboxItems->contains($inboxItem)) {
             $this->inboxItems[] = $inboxItem;
-            $inboxItem->setCategoriaItem($this);
+            $inboxItem->setInboxitemCategoria($this);
         }
 
         return $this;
@@ -150,8 +150,8 @@ class CategoriaItem extends JsonSerializableEntity
     {
         if ($this->inboxItems->removeElement($inboxItem)) {
             // set the owning side to null (unless already changed)
-            if ($inboxItem->getCategoriaItem() === $this) {
-                $inboxItem->setCategoriaItem(null);
+            if ($inboxItem->getInboxitemCategoria() === $this) {
+                $inboxItem->setInboxitemCategoria(null);
             }
         }
 

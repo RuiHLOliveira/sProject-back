@@ -5,7 +5,7 @@ namespace App\Service;
 use App\Entity\User;
 use DateTimeImmutable;
 use App\Entity\Projeto;
-use App\Entity\CategoriaItem;
+use App\Entity\InboxitemCategoria;
 use Facebook\WebDriver\WebDriverBy;
 use Doctrine\Persistence\ManagerRegistry;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
@@ -13,7 +13,7 @@ use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\WebDriverExpectedCondition;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class CategoriaItemService
+class InboxitemCategoriaService
 {
     
     private $doctrine;
@@ -31,17 +31,17 @@ class CategoriaItemService
     public function findAll(User $usuario, array $filters = [], array $orderBy = null): array
     {
         $filters['usuario'] = $usuario;
-        return $this->doctrine->getRepository(CategoriaItem::class)->findBy($filters, $orderBy);
+        return $this->doctrine->getRepository(InboxitemCategoria::class)->findBy($filters, $orderBy);
     }
 
     /**
-     * @param string $idCategoriaItem
+     * @param string $idInboxitemCategoria
      * @param User $usuario
      */
-    public function find(string $idCategoriaItem, User $usuario): CategoriaItem
+    public function find(string $idInboxitemCategoria, User $usuario): InboxitemCategoria
     {
-        return $this->doctrine->getRepository(CategoriaItem::class)->findOneBy([
-            'id' => $idCategoriaItem,
+        return $this->doctrine->getRepository(InboxitemCategoria::class)->findOneBy([
+            'id' => $idInboxitemCategoria,
             'usuario' => $usuario
         ]);
     }
@@ -49,32 +49,32 @@ class CategoriaItemService
     /**
      * @param User $usuario
      * @param array $orderBy
-     * @return array<CategoriaItem>
+     * @return array<InboxitemCategoria>
      */
-    public function listaCategoriaItemsUseCase(User $usuario, array $filters = [], array $orderBy = null): array
+    public function listaInboxitemCategoriasUseCase(User $usuario, array $filters = [], array $orderBy = null): array
     {
         try {
-            $CategoriaItems = $this->findAll($usuario, $filters, $orderBy);
-            return $CategoriaItems;
+            $InboxitemCategorias = $this->findAll($usuario, $filters, $orderBy);
+            return $InboxitemCategorias;
         } catch (\Exception $e) {
             throw $e;
         }
     }
     
     /**
-     * @param CategoriaItem $categoriaItem
-     * @return CategoriaItem
+     * @param InboxitemCategoria $inboxitemCategoria
+     * @return InboxitemCategoria
      */
-    public function atualizaCategoriaItemUseCase(CategoriaItem $categoriaItem): CategoriaItem
+    public function atualizaInboxitemCategoriaUseCase(InboxitemCategoria $inboxitemCategoria): InboxitemCategoria
     {
         $entityManager = $this->doctrine->getManager();
         try {
             $entityManager->getConnection()->beginTransaction();
-            $categoriaItem->setUpdatedAt(new DateTimeImmutable());
-            $entityManager->persist($categoriaItem);
+            $inboxitemCategoria->setUpdatedAt(new DateTimeImmutable());
+            $entityManager->persist($inboxitemCategoria);
             $entityManager->flush();
             $entityManager->getConnection()->commit();
-            return $categoriaItem;
+            return $inboxitemCategoria;
         } catch (\Throwable $th) {
             $entityManager->getConnection()->rollback();
             throw $th;
@@ -84,26 +84,26 @@ class CategoriaItemService
     /**
      * @param string $nome
      * @param User $usuario
-     * @return CategoriaItem
+     * @return InboxitemCategoria
      */
-    public function factoryCategoriaItem($categoria, $usuario)
+    public function factoryInboxitemCategoria($categoria, $usuario)
     {
-        $categoriaItem = new CategoriaItem();
-        $categoriaItem->setUsuario($usuario);
-        $categoriaItem->setCategoria($categoria);
-        return $categoriaItem;
+        $inboxitemCategoria = new InboxitemCategoria();
+        $inboxitemCategoria->setUsuario($usuario);
+        $inboxitemCategoria->setCategoria($categoria);
+        return $inboxitemCategoria;
     }
 
-    public function createNewCategoriaItem(CategoriaItem $categoriaItem)
+    public function createNewInboxitemCategoria(InboxitemCategoria $inboxitemCategoria)
     {
         $entityManager = $this->doctrine->getManager();
         try {
             $entityManager->getConnection()->beginTransaction();
-            $categoriaItem->setCreatedAt(new DateTimeImmutable());
-            $entityManager->persist($categoriaItem);
+            $inboxitemCategoria->setCreatedAt(new DateTimeImmutable());
+            $entityManager->persist($inboxitemCategoria);
             $entityManager->flush();
             $entityManager->getConnection()->commit();
-            return $categoriaItem;
+            return $inboxitemCategoria;
         } catch (\Throwable $th) {
             $entityManager->getConnection()->rollback();
             throw $th;
@@ -111,16 +111,16 @@ class CategoriaItemService
     }
 
     
-    public function editarUseCase(CategoriaItem $categoriaItem, User $usuario)
+    public function editarUseCase(InboxitemCategoria $inboxitemCategoria, User $usuario)
     {
         $entityManager = $this->doctrine->getManager();
         try {
             $entityManager->getConnection()->beginTransaction();
-            $categoriaItem->setUpdatedAt(new DateTimeImmutable());
-            $entityManager->persist($categoriaItem);
+            $inboxitemCategoria->setUpdatedAt(new DateTimeImmutable());
+            $entityManager->persist($inboxitemCategoria);
             $entityManager->flush();
             $entityManager->getConnection()->commit();
-            return $categoriaItem;
+            return $inboxitemCategoria;
         } catch (\Throwable $th) {
             $entityManager->getConnection()->rollback();
             throw $th;

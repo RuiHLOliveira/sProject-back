@@ -4,9 +4,9 @@ namespace App\Controller;
 
 use Exception;
 use DateTimeImmutable;
-use App\Entity\CategoriaItem;
+use App\Entity\InboxitemCategoria;
 use PhpParser\JsonDecoder;
-use App\Service\CategoriaItemService;
+use App\Service\InboxitemCategoriaService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,14 +16,14 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class CategoriaItemController extends AbstractController
+class InboxitemCategoriaController extends AbstractController
 {
     
-    private $categoriaItemService;
+    private $inboxitemCategoriaService;
 
-    public function __construct(CategoriaItemService $categoriaItemService)
+    public function __construct(InboxitemCategoriaService $inboxitemCategoriaService)
     {
-        $this->categoriaItemService = $categoriaItemService;
+        $this->inboxitemCategoriaService = $inboxitemCategoriaService;
     }
 
     private function getOrderBy(Request $request)
@@ -48,7 +48,7 @@ class CategoriaItemController extends AbstractController
     }
 
     /**
-     * @Route("/categoriaItems", name="app_categoriaItems_list", methods={"GET", "HEAD"})
+     * @Route("/inboxitemCategorias", name="app_inboxitemCategorias_list", methods={"GET", "HEAD"})
      */
     public function index(Request $request): Response
     {
@@ -58,7 +58,7 @@ class CategoriaItemController extends AbstractController
             $filters = [];
             $orderBy = $this->getOrderBy($request);
 
-            $entityList = $this->categoriaItemService->listaCategoriaItemsUseCase($usuario, $filters, $orderBy);
+            $entityList = $this->inboxitemCategoriaService->listaInboxitemCategoriasUseCase($usuario, $filters, $orderBy);
 
             $properties = $this->getProperties($request);
 
@@ -68,51 +68,51 @@ class CategoriaItemController extends AbstractController
         }
     }
     
-    private function validateCreateCategoriaItemData($requestData) {
+    private function validateCreateInboxitemCategoriaData($requestData) {
         if( !property_exists($requestData, 'categoria') || $requestData->categoria == ''){
             throw new BadRequestHttpException("Categoria não enviada.");
         }
     }
 
     /**
-     * @Route("/categoriaItems", name="app_categoriaItems_create", methods={"POST"})
+     * @Route("/inboxitemCategorias", name="app_inboxitemCategorias_create", methods={"POST"})
      */
     public function create(Request $request, ManagerRegistry $doctrine): JsonResponse
     {
         try {
             $usuario = $this->getUser();
             $requestData = json_decode($request->getContent());
-            $this->validateCreateCategoriaItemData($requestData);
-            $categoriaItem = $this->categoriaItemService->factoryCategoriaItem(
+            $this->validateCreateInboxitemCategoriaData($requestData);
+            $inboxitemCategoria = $this->inboxitemCategoriaService->factoryInboxitemCategoria(
                 $requestData->categoria,
                 $usuario
             );
-            $categoriaItem = $this->categoriaItemService->createNewCategoriaItem($categoriaItem);
-            return new JsonResponse($categoriaItem, Response::HTTP_CREATED);
+            $inboxitemCategoria = $this->inboxitemCategoriaService->createNewInboxitemCategoria($inboxitemCategoria);
+            return new JsonResponse($inboxitemCategoria, Response::HTTP_CREATED);
         } catch (\Exception $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 
-    private function validateUpdateCategoriaItemData($requestData) {
-        $this->validateCreateCategoriaItemData($requestData);
+    private function validateUpdateInboxitemCategoriaData($requestData) {
+        $this->validateCreateInboxitemCategoriaData($requestData);
     }
 
     /**
-     * @Route("/categoriaItems/{id}", name="app_categoriaItems_update", methods={"PUT"})
+     * @Route("/inboxitemCategorias/{id}", name="app_inboxitemCategorias_update", methods={"PUT"})
      */
     public function update($id, Request $request): JsonResponse
     {
         try {
             $usuario = $this->getUser();
             $requestData = json_decode($request->getContent());
-            $this->validateUpdateCategoriaItemData($requestData);
-            $categoriaItem = $this->categoriaItemService->find($id, $usuario);
-            if($categoriaItem == null) {
-                throw new NotFoundHttpException('categoriaItem não encontrada.');
+            $this->validateUpdateInboxitemCategoriaData($requestData);
+            $inboxitemCategoria = $this->inboxitemCategoriaService->find($id, $usuario);
+            if($inboxitemCategoria == null) {
+                throw new NotFoundHttpException('inboxitemCategoria não encontrada.');
             }
-            $categoriaItem->setCategoria($requestData->categoria);
-            $this->categoriaItemService->atualizacategoriaItemUseCase($categoriaItem);
+            $inboxitemCategoria->setCategoria($requestData->categoria);
+            $this->inboxitemCategoriaService->atualizainboxitemCategoriaUseCase($inboxitemCategoria);
             return new JsonResponse();
         } catch (\Exception $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);

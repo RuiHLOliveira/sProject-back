@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\Entity\CategoriaItem;
+use App\Entity\InboxitemCategoria;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\InboxItemRepository;
 
@@ -29,7 +29,7 @@ class InboxItem extends JsonSerializableEntity
         $array['nome'] = $this->getNome();
         $array['link'] = $this->getLink();
         $array['origem'] = $this->getOrigem();
-        $array['categoriaItem'] = $this->getCategoriaItem();
+        $array['inboxitemCategoria'] = $this->getInboxitemCategoria();
         $array['origemDescritivo'] = self::ORIGENS[$this->getOrigem()];
         $array['acao'] = $this->getAcao();
         $array['dict_origens'] = self::ORIGENS;
@@ -78,10 +78,10 @@ class InboxItem extends JsonSerializableEntity
     protected $deleted_at;
 
     /**
-     * @ORM\ManyToOne(targetEntity=CategoriaItem::class, inversedBy="inboxItems")
+     * @ORM\ManyToOne(targetEntity=InboxitemCategoria::class, inversedBy="inboxItems")
      * @ORM\JoinColumn(nullable=true)
      */
-    protected $categoriaItem;
+    protected $inboxitemCategoria;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="inboxItems")
@@ -154,14 +154,14 @@ class InboxItem extends JsonSerializableEntity
         return $this;
     }
 
-    public function getCategoriaItem(): ?CategoriaItem
+    public function getInboxitemCategoria(): ?InboxitemCategoria
     {
-        return $this->categoriaItem;
+        return $this->inboxitemCategoria;
     }
 
-    public function setCategoriaItem(?CategoriaItem $categoriaItem): self
+    public function setInboxitemCategoria(?InboxitemCategoria $inboxitemCategoria): self
     {
-        $this->categoriaItem = $categoriaItem;
+        $this->inboxitemCategoria = $inboxitemCategoria;
 
         return $this;
     }

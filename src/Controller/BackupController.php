@@ -13,12 +13,12 @@ use DateTimeImmutable;
 use App\Entity\Projeto;
 use App\Entity\Notebook;
 use App\Entity\Atividade;
-use App\Entity\CategoriaItem;
+use App\Entity\InboxitemCategoria;
 use App\Entity\Historico;
 use App\Entity\InboxItem;
 use App\Entity\HabitoRealizado;
 use App\Service\BackupService;
-use App\Service\CategoriaItemService;
+use App\Service\InboxitemCategoriaService;
 use App\Service\HabitosService;
 use App\Service\ProjetosService;
 use App\Service\InboxItemService;
@@ -57,9 +57,9 @@ class BackupController extends AbstractController
     private $historicosService;
 
     /**
-     * @var CategoriaItemService $categoriaItemsService
+     * @var InboxitemCategoriaService $inboxitemCategoriasService
      */
-    private $categoriaItemsService;
+    private $inboxitemCategoriasService;
 
     /**
      * @var BackupService $backupService
@@ -71,14 +71,14 @@ class BackupController extends AbstractController
         HistoricosService $historicosService,
         HabitosService $habitosService,
         InboxItemService $inboxItemService,
-        CategoriaItemService $categoriaItemsService,
+        InboxitemCategoriaService $inboxitemCategoriasService,
         BackupService $backupService
     ) {
         $this->projetosService = $projetosService;
         $this->historicosService = $historicosService;
         $this->habitosService = $habitosService;
         $this->inboxItemService = $inboxItemService;
-        $this->categoriaItemsService = $categoriaItemsService;
+        $this->inboxitemCategoriasService = $inboxitemCategoriasService;
         $this->backupService = $backupService;
     }
 
@@ -221,7 +221,7 @@ class BackupController extends AbstractController
                 $arquivoTxt .= "Ação: ".$inboxItem->getAcao()."\n";
                 $arquivoTxt .= "Link: ".$inboxItem->getLink()."\n";
                 $arquivoTxt .= "Categoria: ";
-                $arquivoTxt .= !is_null($inboxItem->getCategoriaItem()) ? $inboxItem->getCategoriaItem()->getCategoria() : '-';
+                $arquivoTxt .= !is_null($inboxItem->getInboxitemCategoria()) ? $inboxItem->getInboxitemCategoria()->getCategoria() : '-';
                 $arquivoTxt .= "\n";
                 $arquivoTxt .= "Origem: ".InboxItem::ORIGENS[$inboxItem->getOrigem()]."\n";
                 $arquivoTxt .= "Criado em: ".$createdAt."\n";
@@ -258,9 +258,9 @@ class BackupController extends AbstractController
             
             $inboxItems = $this->inboxItemService->findAll($usuario, [], []);
 
-            $categoriaItems = $this->categoriaItemsService->findAll($usuario, [], []);
+            $inboxitemCategorias = $this->inboxitemCategoriasService->findAll($usuario, [], []);
 
-            return new JsonResponse(compact('projetos', 'habitos', 'inboxItems', 'categoriaItems'), 200);
+            return new JsonResponse(compact('projetos', 'habitos', 'inboxItems', 'inboxitemCategorias'), 200);
         } catch (\Exception $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
@@ -322,11 +322,11 @@ class BackupController extends AbstractController
                 $entityManager->remove($inboxItem);
             }
             
-            $categoriaItems = $doctrine->getRepository(CategoriaItem::class)->findBy([
+            $inboxitemCategorias = $doctrine->getRepository(InboxitemCategoria::class)->findBy([
                 'usuario' => $usuario
             ]);
-            foreach ($categoriaItems as $key => $categoriaItem) {
-                $entityManager->remove($categoriaItem);
+            foreach ($inboxitemCategorias as $key => $inboxitemCategoria) {
+                $entityManager->remove($inboxitemCategoria);
             }
 
             foreach ($requestData->projetos as $key => $projeto) {
@@ -496,34 +496,34 @@ class BackupController extends AbstractController
                 $entityManager->flush();
             }
             
-            foreach ($requestData->categoriaItems as $key => $categoriaItem) {
-                $categoriaItemObj = new CategoriaItem();
-                $categoriaItemObj->setCategoria($categoriaItem->categoria);
+            foreach ($requestData->inboxitemCategorias as $key => $inboxitemCategoria) {
+                $inboxitemCategoriaObj = new InboxitemCategoria();
+                $inboxitemCategoriaObj->setCategoria($inboxitemCategoria->categoria);
                 // created at
-                $timezone = new DateTimeZone($categoriaItem->createdAt->timezone);
-                $createdAt = new DateTimeImmutable($categoriaItem->createdAt->date, $timezone);
-                $categoriaItemObj->setCreatedAt($createdAt);
+                $timezone = new DateTimeZone($inboxitemCategoria->createdAt->timezone);
+                $createdAt = new DateTimeImmutable($inboxitemCategoria->createdAt->date, $timezone);
+                $inboxitemCategoriaObj->setCreatedAt($createdAt);
                 // updated at
-                if($categoriaItem->updatedAt != null) {
-                    $timezone = new DateTimeZone($categoriaItem->updatedAt->timezone);
-                    $updatedAt = new DateTimeImmutable($categoriaItem->updatedAt->date, $timezone);
-                    $categoriaItemObj->setUpdatedAt($updatedAt);
+                if($inboxitemCategoria->updatedAt != null) {
+                    $timezone = new DateTimeZone($inboxitemCategoria->updatedAt->timezone);
+                    $updatedAt = new DateTimeImmutable($inboxitemCategoria->updatedAt->date, $timezone);
+                    $inboxitemCategoriaObj->setUpdatedAt($updatedAt);
                 }
                 // deleted at
-                if($categoriaItem->deletedAt != null) {
-                    $timezone = new DateTimeZone($categoriaItem->deletedAt->timezone);
-                    $deletedAt = new DateTimeImmutable($categoriaItem->deletedAt->date, $timezone);
-                    $categoriaItemObj->setDeletedAt($deletedAt);
+                if($inboxitemCategoria->deletedAt != null) {
+                    $timezone = new DateTimeZone($inboxitemCategoria->deletedAt->timezone);
+                    $deletedAt = new DateTimeImmutable($inboxitemCategoria->deletedAt->date, $timezone);
+                    $inboxitemCategoriaObj->setDeletedAt($deletedAt);
                 }
                 // usuario
-                $categoriaItemObj->setUsuario($usuario);
+                $inboxitemCategoriaObj->setUsuario($usuario);
                 // persist
-                $entityManager->persist($categoriaItemObj);
-                $categoriaItemObj->getId();
+                $entityManager->persist($inboxitemCategoriaObj);
+                $inboxitemCategoriaObj->getId();
                 $entityManager->flush();
             }
 
-            $categoriasItens = $this->categoriaItemsService->findAll($usuario);
+            $inboxitemCategorias = $this->inboxitemCategoriasService->findAll($usuario);
 
             foreach ($requestData->inboxItems as $key => $inboxItem) {
                 $inboxItemObj = new InboxItem();
@@ -531,15 +531,15 @@ class BackupController extends AbstractController
                 $inboxItemObj->setAcao($inboxItem->acao);
                 $inboxItemObj->setLink($inboxItem->link);
 
-                if(!is_null($inboxItem->categoriaItem)){
-                    foreach ($categoriasItens as $categoriaItem){
-                        if($inboxItem->categoriaItem->categoria == $categoriaItem->getCategoria()){
-                            $inboxItem->categoriaItem = $categoriaItem;
+                if(!is_null($inboxItem->inboxitemCategoria)){
+                    foreach ($inboxitemCategorias as $inboxitemCategoria){
+                        if($inboxItem->inboxitemCategoria->categoria == $inboxitemCategoria->getCategoria()){
+                            $inboxItem->inboxitemCategoria = $inboxitemCategoria;
                             break;
                         }
                     }
                 }
-                $inboxItemObj->setCategoriaItem($inboxItem->categoriaItem);
+                $inboxItemObj->setInboxitemCategoria($inboxItem->inboxitemCategoria);
                 $inboxItemObj->setOrigem($inboxItem->origem);
                 // created at
                 $timezone = new DateTimeZone($inboxItem->createdAt->timezone);

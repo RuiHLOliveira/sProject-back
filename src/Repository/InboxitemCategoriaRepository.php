@@ -2,26 +2,26 @@
 
 namespace App\Repository;
 
-use App\Entity\CategoriaItem;
+use App\Entity\InboxitemCategoria;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<CategoriaItem>
+ * @extends ServiceEntityRepository<InboxitemCategoria>
  *
- * @method CategoriaItem|null find($id, $lockMode = null, $lockVersion = null)
- * @method CategoriaItem|null findOneBy(array $criteria, array $orderBy = null)
- * @method CategoriaItem[]    findAll()
- * @method CategoriaItem[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method InboxitemCategoria|null find($id, $lockMode = null, $lockVersion = null)
+ * @method InboxitemCategoria|null findOneBy(array $criteria, array $orderBy = null)
+ * @method InboxitemCategoria[]    findAll()
+ * @method InboxitemCategoria[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class CategoriaItemRepository extends ServiceEntityRepository
+class InboxitemCategoriaRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, CategoriaItem::class);
+        parent::__construct($registry, InboxitemCategoria::class);
     }
 
-    public function add(CategoriaItem $entity, bool $flush = false): void
+    public function add(InboxitemCategoria $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
 
@@ -30,7 +30,7 @@ class CategoriaItemRepository extends ServiceEntityRepository
         }
     }
 
-    public function remove(CategoriaItem $entity, bool $flush = false): void
+    public function remove(InboxitemCategoria $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
 

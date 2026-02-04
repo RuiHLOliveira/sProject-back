@@ -5,7 +5,7 @@ namespace App\Service;
 use App\Entity\User;
 use DateTimeImmutable;
 use App\Entity\Projeto;
-use App\Entity\CategoriaItem;
+use App\Entity\InboxitemCategoria;
 use Facebook\WebDriver\WebDriverBy;
 use Doctrine\Persistence\ManagerRegistry;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
