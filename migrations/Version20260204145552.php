@@ -1,0 +1,34 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DoctrineMigrations;
+
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
+
+/**
+ * Auto-generated Migration: Please modify to your needs!
+ */
+final class Version20260204145552 extends AbstractMigration
+{
+    public function getDescription(): string
+    {
+        return '';
+    }
+
+    public function up(Schema $schema): void
+    {
+        // this up() migration is auto-generated, please modify it to your needs
+        $this->addSql('ALTER TABLE tarefa ADD texto_adicional TEXT DEFAULT NULL');
+        $this->addSql('ALTER TABLE tarefa ADD obs_conclusao TEXT DEFAULT NULL');
+    }
+
+    public function down(Schema $schema): void
+    {
+        // this down() migration is auto-generated, please modify it to your needs
+        $this->addSql('CREATE SCHEMA public');
+        $this->addSql('ALTER TABLE tarefa DROP texto_adicional');
+        $this->addSql('ALTER TABLE tarefa DROP obs_conclusao');
+    }
+}

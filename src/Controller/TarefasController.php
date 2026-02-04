@@ -92,9 +92,9 @@ class TarefasController extends AbstractController
         if( !property_exists($requestData, 'projeto') || $requestData->projeto == ''){
             throw new BadRequestHttpException("Projeto não enviado.");
         }
-        // if( !property_exists($requestData, 'hora') || $requestData->hora == ''){
-        //     throw new BadRequestHttpException("Hora não enviada.");
-        // }
+        if( !property_exists($requestData, 'textoAdicional')){
+            $requestData->textoAdicional = null;
+        }
     }
 
     /**
@@ -107,7 +107,7 @@ class TarefasController extends AbstractController
             $requestData = json_decode($request->getContent());
             $this->validateCreateTarefaData($requestData);
 
-            $tarefa = $this->tarefasService->factoryTarefa($requestData->descricao, $requestData->motivo, $requestData->projeto, $requestData->datahora, $usuario);
+            $tarefa = $this->tarefasService->factoryTarefa($requestData->descricao, $requestData->textoAdicional, $requestData->motivo, $requestData->projeto, $requestData->datahora, $usuario);
             $tarefa = $this->tarefasService->createNewTarefa($tarefa);
             return new JsonResponse($tarefa, Response::HTTP_CREATED);
         } catch (\Exception $e) {
@@ -119,9 +119,9 @@ class TarefasController extends AbstractController
         if( !property_exists($requestData, 'descricao') || $requestData->descricao == ''){
             throw new BadRequestHttpException("Descrição não enviada.");
         }
-        // if( !property_exists($requestData, 'hora') || $requestData->hora == ''){
-        //     throw new BadRequestHttpException("Hora não enviada.");
-        // }
+        if( !property_exists($requestData, 'textoAdicional')){
+            $requestData->textoAdicional = null;
+        }
     }
 
     /**
@@ -137,6 +137,7 @@ class TarefasController extends AbstractController
             $tarefa = $this->validateTarefaExiste($id, $usuario);
 
             $tarefa->setDescricao($requestData->descricao);
+            if($requestData->textoAdicional != null) $tarefa->setTextoAdicional($requestData->textoAdicional);
             if($requestData->motivo != null) $tarefa->setMotivo($requestData->motivo);
             if($requestData->datahora != '') {
                 $tarefa->setDatahora(new DateTimeImmutable($requestData->datahora));
@@ -197,7 +198,9 @@ class TarefasController extends AbstractController
     {
         try {
             $usuario = $this->getUser();
+            $requestData = json_decode($request->getContent());
             $tarefa = $this->validateTarefaExiste($id, $usuario);
+            if($requestData->textoAdicional != null) $tarefa->setTextoAdicional($requestData->textoAdicional);
             $tarefa = $this->tarefasService->concluir($tarefa, $usuario);
             $tarefa = $this->tarefasService->find($tarefa->getId(), $usuario);
             return new JsonResponse($tarefa, Response::HTTP_OK);

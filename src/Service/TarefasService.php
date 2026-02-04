@@ -111,7 +111,7 @@ class TarefasService
      * @param User $usuario
      * @return Tarefa
      */
-    public function factoryTarefa($descricao, $motivo, $projetoId, $datahora, $usuario) {
+    public function factoryTarefa($descricao, $textoAdicional, $motivo, $projetoId, $datahora, $usuario) {
 
         $projeto = $this->doctrine->getRepository(Projeto::class)->findOneBy([
             'id' => $projetoId,
@@ -124,13 +124,13 @@ class TarefasService
         $tarefa = new Tarefa();
         $tarefa->setUsuario($usuario);
         $tarefa->setDescricao($descricao);
+        $tarefa->setTextoAdicional($textoAdicional);
         $tarefa->setMotivo($motivo);
         $tarefa->setSituacao(0);
         $tarefa->setProjeto($projeto);
         if($datahora != ''){
             $tarefa->setDatahora(new DateTimeImmutable($datahora));
         }
-        
         
         return $tarefa;
     }

@@ -117,7 +117,17 @@ class Tarefa extends JsonSerializableEntity
     /**
      * @ORM\Column(type="text", nullable=true)
      */
+    protected $textoAdicional;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
     protected $motivo;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    protected $obsConclusao;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
@@ -319,6 +329,46 @@ class Tarefa extends JsonSerializableEntity
     public function setMeuDia($meuDia): self
     {
         $this->meuDia = $meuDia;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of textoAdicional
+     */ 
+    public function getTextoAdicional()
+    {
+        return $this->textoAdicional;
+    }
+
+    /**
+     * Set the value of textoAdicional
+     *
+     * @return  self
+     */ 
+    public function setTextoAdicional($textoAdicional)
+    {
+        $this->textoAdicional = $textoAdicional;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of obsConclusao
+     */ 
+    public function getObsConclusao()
+    {
+        return $this->obsConclusao;
+    }
+
+    /**
+     * Set the value of obsConclusao
+     *
+     * @return  self
+     */ 
+    public function setObsConclusao($obsConclusao)
+    {
+        $this->obsConclusao = $obsConclusao;
 
         return $this;
     }
