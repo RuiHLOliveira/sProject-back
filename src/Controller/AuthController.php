@@ -8,6 +8,7 @@ use Firebase\JWT\Key;
 use App\Service\AuthService;
 use App\Entity\InvitationToken;
 use App\Repository\UserRepository;
+use App\Service\PersonagensService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,11 +22,13 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 class AuthController extends AbstractController
 {
 
-    private $authService;
+    private PersonagensService $personagensService;
+    private AuthService $authService;
 
-    public function __construct(AuthService $authService)
+    public function __construct(AuthService $authService, PersonagensService $personagensService)
     {
         $this->authService = $authService;
+        $this->personagensService = $personagensService;
     }
 
     /**
@@ -120,6 +123,8 @@ class AuthController extends AbstractController
             }
 
             $tokens = $this->makeNewTokens($user);
+
+            $this->personagensService->createPersonagemUseCase($user);
             
             return new JsonResponse([
                 'message' => 'success!',
