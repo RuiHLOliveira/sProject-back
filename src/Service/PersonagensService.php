@@ -38,7 +38,7 @@ class PersonagensService
      * @param integer $id
      * @return Personagem
      */
-    public function findOne(User $usuario, $id): Personagem
+    public function find(User $usuario, $id): Personagem
     {
         $criteria['usuario'] = $usuario;
         $criteria['id'] = $id;

@@ -27,6 +27,16 @@ class PersonagemHistorico implements JsonSerializable
         return $array;
     }
 
+    const TIPOHISTORICO_TAREFA = 1;
+    const TIPOHISTORICO_HABITO = 2;
+    const TIPOHISTORICO_PROJETO = 3;
+
+    const LISTA_TIPOSHISTORICOS = [
+        self::TIPOHISTORICO_TAREFA => 'Tarefa concluída',
+        self::TIPOHISTORICO_HABITO => 'Hábito concluída',
+        self::TIPOHISTORICO_PROJETO => 'Projeto concluída',
+    ];
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")

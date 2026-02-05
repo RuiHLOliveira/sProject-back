@@ -2,14 +2,17 @@
 
 namespace App\Service;
 
-use App\Entity\Projeto;
-use App\Entity\User;
-use DateTimeImmutable;
-use App\Entity\Tarefa;
-use DateInterval;
 use DateTime;
-use Doctrine\Persistence\ManagerRegistry;
+use DateInterval;
 use LogicException;
+use App\Entity\User;
+use App\Entity\Tarefa;
+use DateTimeImmutable;
+use App\Entity\Projeto;
+use App\Service\RecompensasService;
+use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ObjectRepository;
+use Exception;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
@@ -18,12 +21,23 @@ class TarefasService
     
     private $doctrine;
     private $encoder;
+    private RecompensasService $recompensasService;
 
-    public function __construct(ManagerRegistry $doctrine,  UserPasswordEncoderInterface $encoder)
+    public function __construct(
+        ManagerRegistry $doctrine,
+        UserPasswordEncoderInterface $encoder,
+        RecompensasService $recompensasService
+    )
     {
         $this->doctrine = $doctrine;
         $this->encoder = $encoder;
+        $this->recompensasService = $recompensasService;
     }
+
+    private function getRepository() : ObjectRepository {
+        return $this->doctrine->getRepository(Tarefa::class);
+    }
+
 
     /**
      * @param User $usuario
@@ -156,22 +170,23 @@ class TarefasService
         }
     }
 
-    public function concluir(Tarefa $tarefa, User $usuario){
-        
+    public function concluir(Tarefa $tarefa, User $usuario)
+    {
+        $entityManager = $this->doctrine->getManager();
         try {
-            $entityManager = $this->doctrine->getManager();
             $entityManager->getConnection()->beginTransaction();
 
             $tarefa->concluir();
             $tarefa->setUpdatedAt(new DateTimeImmutable());
             $entityManager->persist($tarefa);
-            $entityManager->flush();
+
+            //validar a parte da recompensa, recompensaacao e personagem e personagemhistorico
+            $historico = $this->recompensasService->processarRecompensaTarefa($tarefa, $usuario);
+
+            $entityManager->persist($tarefa);
 
             $entityManager->getConnection()->commit();
-
-
-            return $tarefa;
-
+            return compact('tarefa', 'historico');
         } catch (\Throwable $th) {
             $entityManager->getConnection()->rollback();
             throw $th;

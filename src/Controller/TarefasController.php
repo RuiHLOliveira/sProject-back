@@ -200,10 +200,12 @@ class TarefasController extends AbstractController
             $usuario = $this->getUser();
             $requestData = json_decode($request->getContent());
             $tarefa = $this->validateTarefaExiste($id, $usuario);
-            if($requestData->textoAdicional != null) $tarefa->setTextoAdicional($requestData->textoAdicional);
-            $tarefa = $this->tarefasService->concluir($tarefa, $usuario);
+            //fazer obs conclusao
+            $array = $this->tarefasService->concluir($tarefa, $usuario);
+            $tarefa = $array['tarefa'];
             $tarefa = $this->tarefasService->find($tarefa->getId(), $usuario);
-            return new JsonResponse($tarefa, Response::HTTP_OK);
+            $array['tarefa'] = $tarefa;
+            return new JsonResponse($array, Response::HTTP_OK);
         } catch (\Exception $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }

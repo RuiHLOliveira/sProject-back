@@ -6,11 +6,17 @@ use DateTime;
 use DateInterval;
 use LogicException;
 use App\Entity\User;
-use App\Entity\Recompensa;
+use App\Entity\Tarefa;
 use DateTimeImmutable;
 use App\Entity\Projeto;
+use App\Entity\Personagem;
+use App\Entity\Recompensa;
+use App\Enums\EntidadeEnum;
+use App\Entity\PersonagemHistorico;
+use App\Service\RecompensasacoesService;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectRepository;
+use App\Service\PersonagensHistoricosService;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
@@ -19,15 +25,19 @@ class RecompensasService
     
     private $doctrine;
     private $encoder;
+    private PersonagensService $personagensService;
+    private PersonagensHistoricosService $personagensHistoricosService;
 
-    public function __construct(ManagerRegistry $doctrine,  UserPasswordEncoderInterface $encoder)
-    {
+    public function __construct(
+        ManagerRegistry $doctrine,
+        UserPasswordEncoderInterface $encoder,
+        PersonagensService $personagensService,
+        PersonagensHistoricosService $personagensHistoricosService
+    ) {
         $this->doctrine = $doctrine;
         $this->encoder = $encoder;
-    }
-
-    private function getRepository() : ObjectRepository {
-        return $this->doctrine->getRepository(Recompensa::class);
+        $this->personagensService = $personagensService;
+        $this->personagensHistoricosService = $personagensHistoricosService;
     }
 
     /**
@@ -37,17 +47,7 @@ class RecompensasService
      */
     public function findAll(array $filters = [], array $orderBy = null): array
     {
-        return $this->getRepository()->findBy($filters, $orderBy);
-    }
-
-    /**
-     * @param integer $id
-     * @return Recompensa
-     */
-    public function find($id): Recompensa
-    {
-        $criteria['id'] = $id;
-        return $this->getRepository()->findOneBy($criteria);
+        return Recompensa::ACOESRECOMPENSAS;
     }
 
     /**
@@ -64,29 +64,53 @@ class RecompensasService
         }
     }
 
-    /**
-     * @param string $nome
-     * @return Recompensa
-     */
-    public function factory($nome) {
-
-        $recompensa = new Recompensa();
-        $recompensa->setNome($nome);
-        return $recompensa;
-    }
-
-    public function createUseCase(Recompensa $recompensa)
+    public function processarRecompensaTarefa (Tarefa $tarefa, User $usuario)
     {
         $entityManager = $this->doctrine->getManager();
         try {
             $entityManager->getConnection()->beginTransaction();
 
-            $recompensa->setCreatedAt(new DateTimeImmutable());
-            $entityManager->persist($recompensa);
-            $entityManager->flush();
+            /**
+             * @var Personagem $personagem
+             */
+            $personagem = $this->personagensService->findAll($usuario)[0];
+            // recompensa
+            $acoesRecompensas = Recompensa::ACOESRECOMPENSAS;
+            $recompensaTarefa = $acoesRecompensas[Recompensa::ACAO_TAREFA];
+            
+            // processa no personagem
+            foreach ($recompensaTarefa['moedas'] as $key => $moedaRecompensa) {
+                if($moedaRecompensa['moeda'] == Recompensa::MOEDA_OURO) {
+                    $personagem->setOuro($personagem->getOuro() + $moedaRecompensa['quantidade']);
+                }
+                if($moedaRecompensa['moeda'] == Recompensa::MOEDA_EXPERIENCIA) {
+                    $personagem->setExperiencia($personagem->getExperiencia() + $moedaRecompensa['quantidade']);
+                }
+            }
+            $personagemAtualizado = $this->personagensService->updatePersonagem($personagem, $usuario);
 
+            // historico
+            $idPersonagem = $personagem->getId();
+            $texto = 'Completou Tarefa ['.$tarefa->getDescricao().']';
+            $dadosjson = [
+                'tarefa' => $tarefa->getDescricao(),
+                'recompensas' => []
+            ];
+
+            
+            foreach ($recompensaTarefa['moedas'] as $key => $moedaRecompensa) {
+                $dadosjson['recompensas'][] = [
+                    'moeda' => $moedaRecompensa['moeda'],
+                    'quantidade' => $moedaRecompensa['quantidade'],
+                ];
+            }
+
+            $historico = $this->personagensHistoricosService->factory($usuario, json_encode($dadosjson), PersonagemHistorico::TIPOHISTORICO_TAREFA, $texto, $idPersonagem);
+            $historico = $this->personagensHistoricosService->createUseCase($historico);
+
+            $entityManager->flush();
             $entityManager->getConnection()->commit();
-            return $recompensa;
+            return $historico;
         } catch (\Throwable $th) {
             $entityManager->getConnection()->rollback();
             throw $th;
