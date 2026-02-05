@@ -5,11 +5,11 @@ namespace App\Entity;
 use JsonSerializable;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
-use App\Repository\RecompensaacaoRepository;
+use App\Repository\RecompensaRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 
 /**
- * @ORM\Entity(repositoryClass=RecompensaacaoRepository::class)
+ * @ORM\Entity(repositoryClass=RecompensaRepository::class)
  */
 class Recompensa implements JsonSerializable
 {
@@ -23,8 +23,24 @@ class Recompensa implements JsonSerializable
             'updatedat' => $this->getUpdatedat(),
             'deletedat' => $this->getDeletedat(),
         ];
+        if($this->serializarRecompensasacoes){
+            $array['recompensaacoes'] = $this->getRecompensaacoes();
+        }
         return $array;
     }
+
+    private $serializarRecompensasacoes;
+
+    public function __construct()
+    {
+        $this->recompensaacoes = new ArrayCollection();
+        $this->serializarRecompensasacoes = false;
+    }
+
+    public function serializarRecompensasAcoes() {
+        $this->serializarRecompensasacoes = true;
+    }
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
@@ -57,11 +73,6 @@ class Recompensa implements JsonSerializable
      */
     private $recompensaacoes;
 
-    public function __construct()
-    {
-        $this->recompensaacoes = new ArrayCollection();
-    }
-
     public function getId(): ?int
     {
         return $this->id;
@@ -88,11 +99,13 @@ class Recompensa implements JsonSerializable
         return $this;
     }
 
-    /**
-     * @return Collection<int, Recompensaacao>
-     */
-    public function getRecompensaacoes(): Collection
+    public function setRecompensaacoes($recompensaacoes): Recompensa
     {
+        $this->recompensaacoes = $recompensaacoes;
+        return $this;
+    }
+
+    public function getRecompensaacoes() {
         return $this->recompensaacoes;
     }
 

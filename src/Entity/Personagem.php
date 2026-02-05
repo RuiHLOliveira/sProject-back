@@ -26,6 +26,7 @@ class Personagem implements JsonSerializable
             'updatedat' => $this->getUpdatedat(),
             'deletedat' => $this->getDeletedat(),
         ];
+        $array['personagemhistoricos'] = $this->personagemHistoricos;
         return $array;
     }
     
