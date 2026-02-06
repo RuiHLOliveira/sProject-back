@@ -7,19 +7,23 @@ use DateTimeImmutable;
 use App\Entity\Projeto;
 use App\Entity\Historico;
 use App\Service\HistoricosService;
+use App\Service\RecompensasService;
 use Doctrine\Persistence\ManagerRegistry;
 
 class ProjetosService
 {
     private ManagerRegistry $doctrine;
     private HistoricosService $historicosService;
+    private RecompensasService $recompensasService;
 
     public function __construct(
         ManagerRegistry $doctrine,
-        HistoricosService $historicosService
+        HistoricosService $historicosService,
+        RecompensasService $recompensasService
     ) {
         $this->doctrine = $doctrine;
         $this->historicosService = $historicosService;
+        $this->recompensasService = $recompensasService;
     }
 
     /**
@@ -125,8 +129,8 @@ class ProjetosService
 
     public function updateProjeto(Projeto $projeto, User $usuario)
     {
+        $entityManager = $this->doctrine->getManager();
         try {
-            $entityManager = $this->doctrine->getManager();
             $entityManager->getConnection()->beginTransaction();
             
             $projeto->setUpdatedAt(new DateTimeImmutable());
@@ -136,9 +140,17 @@ class ProjetosService
             $descricaoHistorico = 'Editado projeto';
             $historicoCriado = $this->criaHistorico($usuario, $projeto, $descricaoHistorico);
 
+            $historico = [];
+            $historicoSubiuNivel = [];
+            if($projeto->getSituacao() == Projeto::SITUACAO_CONCLUIDO) {
+                $dados = $this->recompensasService->processarRecompensaProjeto($projeto, $usuario);
+                $historico = $dados['historico'];
+                $historicoSubiuNivel = $dados['historicoSubiuNivel'];
+            }
+
             $entityManager->flush();
             $entityManager->getConnection()->commit();
-            return $projeto;
+            return compact('projeto','historico', 'historicoSubiuNivel');
         } catch (\Throwable $th) {
             $entityManager->getConnection()->rollback();
             throw $th;

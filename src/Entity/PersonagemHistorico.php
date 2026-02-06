@@ -30,11 +30,15 @@ class PersonagemHistorico implements JsonSerializable
     const TIPOHISTORICO_TAREFA = 1;
     const TIPOHISTORICO_HABITO = 2;
     const TIPOHISTORICO_PROJETO = 3;
+    const TIPOHISTORICO_INBOXITEM = 4;
+    const TIPOHISTORICO_SUBIUNIVEL = 5;
 
     const LISTA_TIPOSHISTORICOS = [
         self::TIPOHISTORICO_TAREFA => 'Tarefa concluída',
-        self::TIPOHISTORICO_HABITO => 'Hábito concluída',
-        self::TIPOHISTORICO_PROJETO => 'Projeto concluída',
+        self::TIPOHISTORICO_HABITO => 'Hábito concluído',
+        self::TIPOHISTORICO_PROJETO => 'Projeto concluído',
+        self::TIPOHISTORICO_INBOXITEM => 'InboxItem revisado',
+        self::TIPOHISTORICO_SUBIUNIVEL => 'Subiu de nível',
     ];
 
     /**

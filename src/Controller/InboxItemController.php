@@ -142,23 +142,24 @@ class InboxItemController extends AbstractController
     {
         try {
             $usuario = $this->getUser();
+            $array = json_decode($request->getContent(), true);
             $requestData = json_decode($request->getContent());
             $this->validateUpdateInboxItemData($requestData);
-
             $inboxItem = $this->inboxItemService->find($id, $usuario);
             if($inboxItem == null) {
                 throw new NotFoundHttpException('inboxItem não encontrada.');
             }
-
             $inboxItem->setNome($requestData->nome);
             $inboxItem->setLink($requestData->link);
-            $inboxitemCategoria = $this->inboxitemCategoriaService->find($requestData->inboxitemCategoria->id, $usuario);
-            $inboxItem->setInboxitemCategoria($inboxitemCategoria);
             $inboxItem->setAcao($requestData->acao);
-            $this->inboxItemService->atualizainboxItemUseCase($inboxItem);
-
-            return new JsonResponse();
             
+            if($requestData->inboxitemCategoria != null && $requestData->inboxitemCategoria->id != null && $requestData->inboxitemCategoria->id > 0) {
+                $inboxitemCategoria = $this->inboxitemCategoriaService->find($requestData->inboxitemCategoria->id, $usuario);
+                $inboxItem->setInboxitemCategoria($inboxitemCategoria);
+            }
+
+            $dados = $this->inboxItemService->atualizainboxItemUseCase($inboxItem, $usuario);
+            return new JsonResponse($dados, Response::HTTP_OK);
         } catch (\Exception $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }

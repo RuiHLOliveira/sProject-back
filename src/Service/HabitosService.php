@@ -3,23 +3,27 @@
 namespace App\Service;
 
 use App\Entity\User;
-use DateTimeImmutable;
 use App\Entity\Habito;
-use App\Entity\HabitoRealizado;
+use DateTimeImmutable;
 use App\Entity\Historico;
+use App\Entity\HabitoRealizado;
+use App\Service\RecompensasService;
 use Doctrine\Persistence\ManagerRegistry;
 
 class HabitosService
 {
     private ManagerRegistry $doctrine;
     protected HistoricosService $historicosService;
+    protected RecompensasService $recompensasService;
 
     public function __construct(
         ManagerRegistry $doctrine,
-        HistoricosService $historicosService
+        HistoricosService $historicosService,
+        RecompensasService $recompensasService
     ) {
         $this->doctrine = $doctrine;
         $this->historicosService = $historicosService;
+        $this->recompensasService = $recompensasService;
     }
 
     /**
@@ -172,11 +176,14 @@ class HabitosService
 
             $historicoCriado = $this->criaHistoricoHabitoConcluido($textoObservacao, $habito, $usuario);
 
-            $entityManager->flush();
+            $dados = $this->recompensasService->processarRecompensaHabito($habito, $usuario);
+            $historico = $dados['historico'];
+            $historicoSubiuNivel = $dados['historicoSubiuNivel'];
 
+            $entityManager->flush();
             $entityManager->getConnection()->commit();
 
-            return $habito;
+            return compact('habito', 'historico', 'historicoSubiuNivel');
 
         } catch (\Throwable $th) {
             $entityManager->getConnection()->rollback();

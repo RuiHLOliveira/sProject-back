@@ -151,9 +151,9 @@ class HabitosController extends AbstractController
             if($habito == null) {
                 throw new NotFoundHttpException('Habito não encontrado.');
             }
-            $habito = $this->habitosService->concluir($textoObservacao, $habito, $usuario);
-            $habito = $this->habitosService->find($habito->getId(), $usuario);
-            return new JsonResponse($habito, Response::HTTP_OK);
+            $dados = $this->habitosService->concluir($textoObservacao, $habito, $usuario);
+            $dados['habito'] = $this->habitosService->find($dados['habito']->getId(), $usuario);
+            return new JsonResponse($dados, Response::HTTP_OK);
         } catch (\Exception $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }

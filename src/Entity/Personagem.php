@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
-use App\Repository\PersonagemRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
 use JsonSerializable;
+use App\Entity\Recompensa;
+use Doctrine\ORM\Mapping as ORM;
+use App\Repository\PersonagemRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @ORM\Entity(repositoryClass=PersonagemRepository::class)
@@ -26,10 +27,26 @@ class Personagem implements JsonSerializable
             'updatedat' => $this->getUpdatedat(),
             'deletedat' => $this->getDeletedat(),
         ];
-        $array['personagemhistoricos'] = $this->personagemHistoricos;
+        $array['personagemhistoricos'] = $this->personagemHistoricosToArray();
+        $array['expProximoNivel'] = Recompensa::TABELA_EXPERIENCIA[$this->getNivel()];
         return $array;
     }
+
+    private $personagemHistoricosArray;
     
+    public function personagemHistoricosToArray() {
+        $collection = $this->getPersonagemHistoricos();
+        $collection = $collection->toArray();
+
+        usort($collection, function ($a, $b) {
+            return $b->getCreatedAt() <=> $a->getCreatedAt();
+        });
+
+        $this->personagemHistoricosArray = $collection;
+        return $this->personagemHistoricosArray;
+    }
+
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")

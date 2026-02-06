@@ -15,12 +15,15 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class InboxItemService
 {
-    
     private $doctrine;
+    private RecompensasService $recompensasService;
 
-    public function __construct(ManagerRegistry $doctrine)
-    {
+    public function __construct(
+        ManagerRegistry $doctrine,
+        RecompensasService $recompensasService
+    ) {
         $this->doctrine = $doctrine;
+        $this->recompensasService = $recompensasService;
     }
 
     /**
@@ -61,22 +64,24 @@ class InboxItemService
         }
     }
     
-    /**
-     * @param InboxItem $inboxItem
-     * @return InboxItem
-     */
-    public function atualizaInboxItemUseCase(InboxItem $inboxItem): InboxItem
+    public function atualizaInboxItemUseCase(InboxItem $inboxItem, User $usuario)
     {
         $entityManager = $this->doctrine->getManager();
         try {
             $entityManager->getConnection()->beginTransaction();
-
             $inboxItem->setUpdatedAt(new DateTimeImmutable());
-
             $entityManager->persist($inboxItem);
             $entityManager->flush();
+            $historico = [];
+            $historicoSubiuNivel = [];
+            // se categorizado
+            if($inboxItem->getInboxitemCategoria() != null && $inboxItem->getInboxitemCategoria()->getId() != null){
+                $dados = $this->recompensasService->processarRecompensaInboxItem($inboxItem, $usuario);
+                $historico = $dados['historico'];
+                $historicoSubiuNivel = $dados['historicoSubiuNivel'];
+            }
             $entityManager->getConnection()->commit();
-            return $inboxItem;
+            return compact('inboxItem', 'historico', 'historicoSubiuNivel');
         } catch (\Throwable $th) {
             $entityManager->getConnection()->rollback();
             throw $th;
@@ -169,10 +174,7 @@ class InboxItemService
             $entityManager->flush();
 
             $entityManager->getConnection()->commit();
-
-
-            return $inboxItem;
-
+            return compact('inboxItem', '$historico');
         } catch (\Throwable $th) {
             $entityManager->getConnection()->rollback();
             throw $th;

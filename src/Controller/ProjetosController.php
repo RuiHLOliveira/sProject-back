@@ -181,9 +181,9 @@ class ProjetosController extends AbstractController
             // $oldProjeto = clone($projeto);
             $projeto = $this->fillUpdateProjeto($requestObj, $projeto);
 
-            $projeto = $this->projetosService->updateProjeto($projeto, $usuario);
+            $dados = $this->projetosService->updateProjeto($projeto, $usuario);
 
-            return new JsonResponse($projeto, Response::HTTP_CREATED);
+            return new JsonResponse($dados, Response::HTTP_CREATED);
         } catch (\Exception $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (\Error $e) {

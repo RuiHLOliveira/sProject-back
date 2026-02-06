@@ -180,13 +180,14 @@ class TarefasService
             $tarefa->setUpdatedAt(new DateTimeImmutable());
             $entityManager->persist($tarefa);
 
-            //validar a parte da recompensa, recompensaacao e personagem e personagemhistorico
-            $historico = $this->recompensasService->processarRecompensaTarefa($tarefa, $usuario);
+            $dados = $this->recompensasService->processarRecompensaTarefa($tarefa, $usuario);
+            $historico = $dados['historico'];
+            $historicoSubiuNivel = $dados['historicoSubiuNivel'];
 
             $entityManager->persist($tarefa);
 
             $entityManager->getConnection()->commit();
-            return compact('tarefa', 'historico');
+            return compact('tarefa', 'historico', 'historicoSubiuNivel');
         } catch (\Throwable $th) {
             $entityManager->getConnection()->rollback();
             throw $th;
