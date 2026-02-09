@@ -90,7 +90,7 @@ class RecompensasService
         $constRecompensa = Recompensa::ACAO_PROJETO;
         $constTipoHistorico = PersonagemHistorico::TIPOHISTORICO_PROJETO;
         $descricaoAtividade = $projeto->getNome();
-        $texto = 'Completou projetp ['.$descricaoAtividade.']';
+        $texto = 'Completou projeto ['.$descricaoAtividade.']';
         return $this->processarRecompensaGeral($usuario, $constRecompensa, $constTipoHistorico, $descricaoAtividade, $texto);
     }
 
@@ -108,7 +108,7 @@ class RecompensasService
         $entityManager = $this->doctrine->getManager();
         try {
             $entityManager->getConnection()->beginTransaction();
-            $recompensa = Recompensa::ACOESRECOMPENSAS[Recompensa::ACAO_INBOXITEM];
+            $recompensa = Recompensa::ACOESRECOMPENSAS[$constRecompensa];
             $personagem = $this->processaRecompensaPersonagem($usuario, $recompensa);
 
             $historico = $this->processaRecompensaHistoricoPersonagem(
@@ -137,18 +137,26 @@ class RecompensasService
             $nivelAtual = $personagem->getNivel();
 
             $historico = null;
-            if(!isset(Recompensa::TABELA_EXPERIENCIA[$nivelAtual])){
+            $tabelaNiveis = Recompensa::getTabelaNiveis();
+            $nivelAtual = $tabelaNiveis[$nivelAtual];
+            $expProxNivel = $nivelAtual['expProxNivel'];
+            if($expProxNivel == null){
                 $entityManager->flush();
                 $entityManager->getConnection()->commit();
                 return $historico;
             }
 
-            $expProxNivel = Recompensa::TABELA_EXPERIENCIA[$nivelAtual];
-
             if($qtdExpTotal >=  $expProxNivel){
                 $personagem->setNivel($personagem->getNivel() + 1);
+                $nivelAtual = $tabelaNiveis[$personagem->getNivel()];
+
+                $personagemAtribudos = json_decode($personagem->getAtributosjson());
+                $personagemAtribudos->vidaMaxima = $nivelAtual['vidaMaxima'];
+                $personagemAtribudos->vidaAtual = $personagemAtribudos->vidaMaxima;
+                $personagem->setAtributosjson(json_encode($personagemAtribudos));
+
                 $personagemAtualizado = $this->personagensService->updatePersonagem($personagem, $usuario);
-                $texto = sprintf('Subiu de Nível! %s => %s', $nivelAtual, $nivelAtual+1);
+                $texto = sprintf('Subiu de Nível! %s => %s', $personagem->getNivel()-1, $personagem->getNivel());
                 $historico = $this->personagensHistoricosService->factory($usuario, json_encode([]), PersonagemHistorico::TIPOHISTORICO_SUBIUNIVEL, $texto, $personagem->getId());
                 $historico = $this->personagensHistoricosService->createUseCase($historico);
             }

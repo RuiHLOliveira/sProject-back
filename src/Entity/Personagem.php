@@ -23,12 +23,14 @@ class Personagem implements JsonSerializable
             'nivel' => $this->getNivel(),
             'experiencia' => $this->getExperiencia(),
             'ouro' => $this->getOuro(),
+            'atributosjson' => $this->getAtributosjson(),
             'createdat' => $this->getCreatedat(),
             'updatedat' => $this->getUpdatedat(),
             'deletedat' => $this->getDeletedat(),
         ];
         $array['personagemhistoricos'] = $this->personagemHistoricosToArray();
-        $array['expProximoNivel'] = Recompensa::TABELA_EXPERIENCIA[$this->getNivel()];
+        $tabelaNiveis = Recompensa::getTabelaNiveis();
+        $array['expProximoNivel'] = $tabelaNiveis[$this->getNivel()]['expProxNivel'];
         return $array;
     }
 
@@ -79,6 +81,11 @@ class Personagem implements JsonSerializable
      * @ORM\Column(type="string", length=255)
      */
     private $nome;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $atributosjson;
 
     /**
      * @ORM\Column(type="smallint", options={"default":1})
@@ -254,6 +261,26 @@ class Personagem implements JsonSerializable
                 $personagemHistorico->setPersonagem(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * Get the value of atributosjson
+     */ 
+    public function getAtributosjson()
+    {
+        return $this->atributosjson;
+    }
+
+    /**
+     * Set the value of atributosjson
+     *
+     * @return  self
+     */ 
+    public function setAtributosjson($atributosjson)
+    {
+        $this->atributosjson = $atributosjson;
 
         return $this;
     }

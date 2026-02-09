@@ -70,6 +70,28 @@ class PersonagensService
         $personagem->setNivel(1);
         $personagem->setExperiencia(0);
         $personagem->setOuro(0);
+        $personagem = $this->setDefaultStatusJson($personagem);
+        return $personagem;
+    }
+
+    private function setDefaultStatusJson(Personagem $personagem)
+    {
+        $defaults = [
+            ['nome' => 'vidaMaxima', 'valor' => 10],
+            ['nome' => 'vidaAtual', 'valor' => 10],
+            ['nome' => 'ataque', 'valor' => 1],
+            ['nome' => 'defesa', 'valor' => 1]
+        ];
+        if($personagem->getAtributosjson() == null || $personagem->getAtributosjson() == '' || $personagem->getAtributosjson() == '{}') {
+            $personagem->setAtributosjson(json_encode([]));
+        }
+        $dados = json_decode($personagem->getAtributosjson(), true);
+        foreach ($defaults as $key => $atributoDefault) {
+            if(!isset($dados[$atributoDefault['nome']])) {
+                $dados[$atributoDefault['nome']] = $atributoDefault['valor'];
+            }
+        }
+        $personagem->setAtributosjson(json_encode($dados));
         return $personagem;
     }
 
@@ -120,6 +142,7 @@ class PersonagensService
             $entityManager->getConnection()->beginTransaction();
             
             $personagem->setUpdatedAt(new DateTimeImmutable());
+            $personagem = $this->setDefaultStatusJson($personagem);
 
             $entityManager->persist($personagem);
             
