@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\User;
 use DateTimeImmutable;
 use App\Entity\Personagem;
+use App\Enums\ClassesEspecializacoes;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectRepository;
 
@@ -55,6 +56,13 @@ class PersonagensService
     {
         try {
             $personagens = $this->findAll($usuario, $filters, $orderBy);
+
+            for ($i=0; $i < count($personagens); $i++) { 
+                $atributos = json_decode($personagens[$i]->getAtributosjson(), true);
+                $atributos['linhaArvoreMaxima'] = ClassesEspecializacoes::getQuantidadePontos($personagens[$i]->getNivel());
+                $personagens[$i]->setAtributosjson(json_encode($atributos));
+            }
+
             return $personagens;
         } catch (\Exception $e) {
             throw $e;

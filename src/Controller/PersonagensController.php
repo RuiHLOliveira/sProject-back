@@ -2,19 +2,20 @@
 
 namespace App\Controller;
 
-use Exception;
-use DateTimeImmutable;
 use App\Entity\Personagem;
 use App\Service\PersonagensService;
 use App\Service\TagsService;
+use DateTimeImmutable;
 use Doctrine\Persistence\ManagerRegistry;
+use Exception;
 use LogicException;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Annotation\Route;
 
 class PersonagensController extends AbstractController
 {
@@ -64,5 +65,39 @@ class PersonagensController extends AbstractController
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
+
+    /**
+     * @Route("/personagens/{id}/atualizarAtributos", name="app_personagens_atualizar_atributos", methods={"PUT"})
+     */
+    public function atualizarAtributos(Request $request, $id): JsonResponse
+    {
+        try {
+            $usuario = $this->getUser();
+            $requestData = json_decode($request->getContent());
+
+            $this->validateAtualizarAtributos($requestData);
+
+            $personagem = $this->personagensService->find($usuario, $id);
+
+            $atributosjson = $requestData->atributosjson;
+
+            $personagem->setAtributosjson($atributosjson);
+
+            $personagem = $this->personagensService->updatePersonagem($personagem, $usuario);
+
+            return new JsonResponse($personagem);
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        } catch (\Error $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+    }
+    
+    private function validateAtualizarAtributos($requestData) {
+        if( !property_exists($requestData, 'atributosjson') || $requestData->atributosjson == ''){
+            throw new BadRequestHttpException("atributosjson não enviada.");
+        }
+    }
+
 
 }

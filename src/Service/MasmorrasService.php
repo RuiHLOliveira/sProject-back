@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\User;
 use DateTimeImmutable;
 use App\Entity\Historico;
+use App\Enums\Habilidades;
 use App\Service\HabitosService;
 use App\Service\TarefasService;
 use App\Service\ProjetosService;
@@ -61,26 +62,12 @@ class MasmorrasService
         ];
     }
 
-    private function buildHabilidade($nome, $dano, $tipo, $segundosCooldown){
-        return [
-            'nome' => $nome,
-            'dano' => $dano,
-            'tipo' => $tipo,
-            'recarga' => $segundosCooldown,
-            'recargaRestante' => 0,
-        ];
-    }
-
-    const TIPO_DANO_FISICO = 'TIPO_DANO_FISICO';
-    const TIPO_DANO_FOGO = 'TIPO_DANO_FOGO';
-    const TIPO_DANO_GELO = 'TIPO_DANO_GELO';
-
     private function get1MinasMortas1Falagrum() {
         // a ordem importa
         $habilidades = [
-            $this->buildHabilidade('Soco', 2, self::TIPO_DANO_FOGO, 3),
-            $this->buildHabilidade('Punhos de Fogo', 8, self::TIPO_DANO_FOGO, 10),
-            $this->buildHabilidade('Punhos de Gelo', 8, self::TIPO_DANO_GELO, 10),
+            Habilidades::buildHabilidade('Soco', 2, 3, Habilidades::TIPO_DANO_FOGO),
+            Habilidades::buildHabilidade('Punhos de Fogo', 8, 10, Habilidades::TIPO_DANO_FOGO),
+            Habilidades::buildHabilidade('Punhos de Gelo', 8, 10, Habilidades::TIPO_DANO_GELO),
             // $this->buildHabilidade('Lampejo'), // implementar efeitos adicionais
             // implementar icones
         ];
@@ -99,9 +86,9 @@ class MasmorrasService
     private function get1MinasMortas2HelixQuebracranio() {
         // a ordem importa
         $habilidades = [
-            $this->buildHabilidade('Lançar Helix', 2, self::TIPO_DANO_FISICO, 5),
-            $this->buildHabilidade('Bomba Grudenta', 5, self::TIPO_DANO_FOGO, 6),
-            $this->buildHabilidade('Parvo Esmaga', 10, self::TIPO_DANO_FISICO, 20),
+            Habilidades::buildHabilidade('Lançar Helix', 2, 5, Habilidades::TIPO_DANO_FISICO),
+            Habilidades::buildHabilidade('Bomba Grudenta', 5, 6, Habilidades::TIPO_DANO_FOGO),
+            Habilidades::buildHabilidade('Parvo Esmaga', 10, 20, Habilidades::TIPO_DANO_FISICO),
             // implementar icones
         ];
         $imagem = '1minasmortas2helixquebracranio.png';
@@ -118,9 +105,9 @@ class MasmorrasService
     private function get1MinasMortas3CeifadorDeInimigos5000 () {
         // a ordem importa
         $habilidades = [
-            $this->buildHabilidade('Golpe do Ceifador', 2, self::TIPO_DANO_FISICO, 3),
-            $this->buildHabilidade('Colher', 4, self::TIPO_DANO_FISICO, 10),
-            $this->buildHabilidade('Colheita Descontrolada', 6, self::TIPO_DANO_FISICO, 15),
+            Habilidades::buildHabilidade('Golpe do Ceifador', 2, 3, Habilidades::TIPO_DANO_FISICO),
+            Habilidades::buildHabilidade('Colher', 4, 10, Habilidades::TIPO_DANO_FISICO),
+            Habilidades::buildHabilidade('Colheita Descontrolada', 6, 15, Habilidades::TIPO_DANO_FISICO),
             // implementar icones
         ];
         $imagem = '1minasmortas3ceifadordeinimigos5000.png';
