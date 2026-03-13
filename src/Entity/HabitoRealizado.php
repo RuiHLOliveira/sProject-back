@@ -17,6 +17,16 @@ class HabitoRealizado extends JsonSerializableEntity
         // $array['habito'] = $this->getHabito(); //recursion
         $array['realizadoEm'] = $this->getRealizadoEm() != null ? $this->getRealizadoEm()->format('Y-m-d H:i:s') : null;
         $array['realizadoEmObj'] = $this->getRealizadoEm();
+        $array['avaliacaoJson'] = $this->getAvaliacaoJson();
+        $array['nota'] = null;
+        $array['psicologico'] = null;
+        $array['pontomelhoria'] = null;
+        if($array['avaliacaoJson'] != null){
+            $dados = json_decode($array['avaliacaoJson']);
+            $array['nota'] = $dados->nota ?? null;
+            $array['psicologico'] = $dados->psicologico ?? null;
+            $array['pontomelhoria'] = $dados->pontomelhoria ?? null;
+        }
         return $array;
     }
     /**
@@ -25,6 +35,11 @@ class HabitoRealizado extends JsonSerializableEntity
      * @ORM\Column(type="integer")
      */
     protected $id;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $avaliacaoJson;
 
     /**
      * @ORM\Column(type="datetime")
@@ -131,6 +146,18 @@ class HabitoRealizado extends JsonSerializableEntity
     public function setHabito(?Habito $habito): self
     {
         $this->habito = $habito;
+
+        return $this;
+    }
+
+    public function getAvaliacaoJson(): ?string
+    {
+        return $this->avaliacaoJson;
+    }
+
+    public function setAvaliacaoJson(?string $avaliacaoJson): self
+    {
+        $this->avaliacaoJson = $avaliacaoJson;
 
         return $this;
     }

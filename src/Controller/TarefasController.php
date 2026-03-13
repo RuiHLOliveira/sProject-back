@@ -153,6 +153,23 @@ class TarefasController extends AbstractController
         }
     }
 
+    /**
+     * @Route("/tarefas/{id}/registra-avaliacao", name="app_tarefas_registra_avaliacao", methods={"POST"})
+     */
+    public function registraAvaliacao($id, Request $request): JsonResponse
+    {
+        try {
+            $usuario = $this->getUser();
+            $requestData = json_decode($request->getContent());
+            $tarefa = $this->validateTarefaExiste($id, $usuario);
+            $tarefa->setAvaliacaoJson($requestData->avaliacaoJson);
+            $this->tarefasService->registraAvaliacaoUseCase($tarefa);
+            return new JsonResponse();
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
     
     /**
      * @Route("/tarefas/{id}", name="app_tarefas_delete", methods={"DELETE"})
@@ -201,6 +218,8 @@ class TarefasController extends AbstractController
             $requestData = json_decode($request->getContent());
             $tarefa = $this->validateTarefaExiste($id, $usuario);
             //fazer obs conclusao
+            $tarefa->setObsConclusao($requestData->obsConclusao);
+            $tarefa->setAvaliacaoJson($requestData->avaliacaoJson);
             $array = $this->tarefasService->concluir($tarefa, $usuario);
             $tarefa = $array['tarefa'];
             $tarefa = $this->tarefasService->find($tarefa->getId(), $usuario);

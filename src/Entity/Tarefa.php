@@ -38,6 +38,19 @@ class Tarefa extends JsonSerializableEntity
         $array['datahoraWeekday'] = $this->weekdayToPtbr($this->getDatahora() != null ? $this->getDatahora()->format('D') : null);
         $array['meuDia'] = $this->getMeuDia() != null ? $this->getMeuDia()->format('Y-m-d H:i:s') : null;
         $array['meuDiaObj'] = $this->getMeuDia();
+        $array['concluidaAt'] = $this->getConcluidaAt();
+        $array['concluidaAtFormatted'] = $this->getConcluidaAt() != null ? $this->getConcluidaAt()->format('d/m/Y H:i') : null;
+        $array['avaliacaoJson'] = $this->getAvaliacaoJson();
+        $array['nota'] = null;
+        $array['psicologico'] = null;
+        $array['pontomelhoria'] = null;
+        if($array['avaliacaoJson'] != null){
+            $dados = json_decode($array['avaliacaoJson']);
+            $array['nota'] = $dados->nota ?? null;
+            $array['psicologico'] = $dados->psicologico ?? null;
+            $array['pontomelhoria'] = $dados->pontomelhoria ?? null;
+        }
+        
 
         if(!$this->serializarProjeto) {
             $array['projeto'] = $this->getProjeto()->getId();
@@ -152,6 +165,11 @@ class Tarefa extends JsonSerializableEntity
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
+    protected $concluida_at;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
     protected $deleted_at;
 
     /**
@@ -177,6 +195,11 @@ class Tarefa extends JsonSerializableEntity
      * @ORM\JoinColumn(nullable=false)
      */
     private $projeto;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $avaliacaoJson;
 
     public function getId(): ?int
     {
@@ -239,6 +262,18 @@ class Tarefa extends JsonSerializableEntity
     public function setUpdatedAt(?\DateTimeImmutable $updated_at): self
     {
         $this->updated_at = $updated_at;
+
+        return $this;
+    }
+
+    public function getConcluidaAt(): ?\DateTimeImmutable
+    {
+        return $this->concluida_at;
+    }
+
+    public function setConcluidaAt(?\DateTimeImmutable $concluida_at): self
+    {
+        $this->concluida_at = $concluida_at;
 
         return $this;
     }
@@ -369,6 +404,18 @@ class Tarefa extends JsonSerializableEntity
     public function setObsConclusao($obsConclusao)
     {
         $this->obsConclusao = $obsConclusao;
+
+        return $this;
+    }
+
+    public function getAvaliacaoJson(): ?string
+    {
+        return $this->avaliacaoJson;
+    }
+
+    public function setAvaliacaoJson(?string $avaliacaoJson): self
+    {
+        $this->avaliacaoJson = $avaliacaoJson;
 
         return $this;
     }

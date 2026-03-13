@@ -100,6 +100,25 @@ class TarefasService
         }
     }
 
+    /**
+     * @param Tarefa $tarefa
+     * @return Tarefa
+     */
+    public function registraAvaliacaoUseCase(Tarefa $tarefa): Tarefa
+    {
+        try {
+            $entityManager = $this->doctrine->getManager();
+            $entityManager->getConnection()->beginTransaction();
+            $entityManager->persist($tarefa);
+            $entityManager->flush();
+            $entityManager->getConnection()->commit();
+            return $tarefa;
+        } catch (\Throwable $th) {
+            $entityManager->getConnection()->rollback();
+            throw $th;
+        }
+    }
+
     public function deleteTarefaUseCase(Tarefa $tarefa, User $usuario)
     {
         $entityManager = $this->doctrine->getManager();
@@ -178,6 +197,7 @@ class TarefasService
 
             $tarefa->concluir();
             $tarefa->setUpdatedAt(new DateTimeImmutable());
+            $tarefa->setConcluidaAt(new DateTimeImmutable());
             $entityManager->persist($tarefa);
 
             $dados = $this->recompensasService->processarRecompensaTarefa($tarefa, $usuario);
