@@ -208,6 +208,32 @@ class TarefasController extends AbstractController
         }
     }
 
+    private function validateAlterarProjetoData($requestData)
+    {
+        if($requestData == null || !property_exists($requestData, 'projeto') || $requestData->projeto == ''){
+            throw new BadRequestHttpException("Projeto nao enviado.");
+        }
+    }
+
+    /**
+     * @Route("/tarefas/{id}/projeto", name="app_tarefas_alterar_projeto", methods={"PUT"})
+     */
+    public function alterarProjeto($id, Request $request): JsonResponse
+    {
+        try {
+            $usuario = $this->getUser();
+            $requestData = json_decode($request->getContent());
+            $this->validateAlterarProjetoData($requestData);
+
+            $tarefa = $this->validateTarefaExiste($id, $usuario);
+            $tarefa = $this->tarefasService->alterarProjetoUseCase($tarefa, $requestData->projeto, $usuario);
+
+            return new JsonResponse($tarefa, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
     /**
      * @Route("/tarefas/{id}/concluir", name="app_tarefas_concluir", methods={"POST"})
      */

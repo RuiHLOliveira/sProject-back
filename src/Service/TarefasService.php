@@ -189,6 +189,20 @@ class TarefasService
         }
     }
 
+    public function alterarProjetoUseCase(Tarefa $tarefa, $projetoId, User $usuario): Tarefa
+    {
+        $projeto = $this->doctrine->getRepository(Projeto::class)->findOneBy([
+            'id' => $projetoId,
+            'usuario' => $usuario
+        ]);
+        if($projeto == null) {
+            throw new NotFoundHttpException('Projeto não encontrado.');
+        }
+
+        $tarefa->setProjeto($projeto);
+        return $this->atualizaTarefasUseCase($tarefa);
+    }
+
     public function concluir(Tarefa $tarefa, User $usuario)
     {
         $entityManager = $this->doctrine->getManager();
