@@ -65,9 +65,33 @@ class MasmorrasService
     private function get1MinasMortas1Falagrum() {
         // a ordem importa
         $habilidades = [
-            Habilidades::buildHabilidade('Soco', 2, 3, Habilidades::TIPO_DANO_FOGO),
-            Habilidades::buildHabilidade('Punhos de Fogo', 8, 10, Habilidades::TIPO_DANO_FOGO),
-            Habilidades::buildHabilidade('Punhos de Gelo', 8, 10, Habilidades::TIPO_DANO_GELO),
+
+            (new Habilidades())
+            ->setNome('Soco')
+            ->setDescricao('-')
+            ->setTipo(Habilidades::TIPO_ATIVO)
+            ->setAtributo(null)
+            ->setPorcentagem(200)
+            ->setRecarga(3),
+
+            
+            (new Habilidades())
+            ->setNome('Punhos de Fogo')
+            ->setDescricao('-')
+            ->setTipo(Habilidades::TIPO_ATIVO)
+            ->setAtributo(null)
+            ->setPorcentagem(600)
+            ->setRecarga(10),
+
+            
+            (new Habilidades())
+            ->setNome('Punhos de Gelo')
+            ->setDescricao('-')
+            ->setTipo(Habilidades::TIPO_ATIVO)
+            ->setAtributo(null)
+            ->setPorcentagem(600)
+            ->setRecarga(10),
+
             // $this->buildHabilidade('Lampejo'), // implementar efeitos adicionais
             // implementar icones
         ];
@@ -86,9 +110,32 @@ class MasmorrasService
     private function get1MinasMortas2HelixQuebracranio() {
         // a ordem importa
         $habilidades = [
-            Habilidades::buildHabilidade('Lançar Helix', 2, 5, Habilidades::TIPO_DANO_FISICO),
-            Habilidades::buildHabilidade('Bomba Grudenta', 5, 6, Habilidades::TIPO_DANO_FOGO),
-            Habilidades::buildHabilidade('Parvo Esmaga', 10, 20, Habilidades::TIPO_DANO_FISICO),
+            
+            (new Habilidades())
+            ->setNome('Lançar Helix')
+            ->setDescricao('-')
+            ->setTipo(Habilidades::TIPO_ATIVO)
+            ->setAtributo(null)
+            ->setPorcentagem(200)
+            ->setRecarga(5),
+
+            
+            (new Habilidades())
+            ->setNome('Bomba Grudenta')
+            ->setDescricao('-')
+            ->setTipo(Habilidades::TIPO_ATIVO)
+            ->setAtributo(null)
+            ->setPorcentagem(500)
+            ->setRecarga(6),
+
+            
+            (new Habilidades())
+            ->setNome('Parvo Esmaga')
+            ->setDescricao('-')
+            ->setTipo(Habilidades::TIPO_ATIVO)
+            ->setAtributo(null)
+            ->setPorcentagem(1000)
+            ->setRecarga(20),
             // implementar icones
         ];
         $imagem = '1minasmortas2helixquebracranio.png';
@@ -105,9 +152,30 @@ class MasmorrasService
     private function get1MinasMortas3CeifadorDeInimigos5000 () {
         // a ordem importa
         $habilidades = [
-            Habilidades::buildHabilidade('Golpe do Ceifador', 2, 3, Habilidades::TIPO_DANO_FISICO),
-            Habilidades::buildHabilidade('Colher', 4, 10, Habilidades::TIPO_DANO_FISICO),
-            Habilidades::buildHabilidade('Colheita Descontrolada', 6, 15, Habilidades::TIPO_DANO_FISICO),
+            
+            (new Habilidades())
+            ->setNome('Golpe do Ceifador')
+            ->setDescricao('-')
+            ->setTipo(Habilidades::TIPO_ATIVO)
+            ->setAtributo(null)
+            ->setPorcentagem(200)
+            ->setRecarga(3),
+            
+            (new Habilidades())
+            ->setNome('Colher')
+            ->setDescricao('-')
+            ->setTipo(Habilidades::TIPO_ATIVO)
+            ->setAtributo(null)
+            ->setPorcentagem(400)
+            ->setRecarga(10),
+            
+            (new Habilidades())
+            ->setNome('Colheita Descontrolada')
+            ->setDescricao('-')
+            ->setTipo(Habilidades::TIPO_ATIVO)
+            ->setAtributo(null)
+            ->setPorcentagem(600)
+            ->setRecarga(15),
             // implementar icones
         ];
         $imagem = '1minasmortas3ceifadordeinimigos5000.png';

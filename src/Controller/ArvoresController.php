@@ -5,7 +5,7 @@ namespace App\Controller;
 use Exception;
 use LogicException;
 use DateTimeImmutable;
-use App\Service\ClassesService;
+use App\Service\ArvoresService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -13,23 +13,23 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class ClassesController extends AbstractController
+class ArvoresController extends AbstractController
 {
 
     /**
-     * @var ClassesService
+     * @var ArvoresService
      */
-    private $classesService;
+    private $arvoresService;
 
 
     public function __construct(
-        ClassesService $classesService
+        ArvoresService $arvoresService
     ) {
-        $this->classesService = $classesService;
+        $this->arvoresService = $arvoresService;
     }
 
     /**
-     * @Route("/classes", name="app_classes_list", methods={"GET","HEAD"})
+     * @Route("/arvores", name="app_arvores_list", methods={"GET","HEAD"})
      */
     public function index(Request $request): JsonResponse
     {
@@ -44,9 +44,9 @@ class ClassesController extends AbstractController
                 $orderBy = [$orderBy[0] => $orderBy[1]];
             }
 
-            $classes = $this->classesService->listaClassesUseCase($usuario, $filters, $orderBy);
+            $arvores = $this->arvoresService->listaArvoresUseCase($usuario, $filters, $orderBy);
 
-            return new JsonResponse($classes);
+            return new JsonResponse($arvores);
         } catch (\Exception $e) {
             return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (\Error $e) {

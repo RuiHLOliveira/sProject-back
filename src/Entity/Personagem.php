@@ -2,12 +2,13 @@
 
 namespace App\Entity;
 
-use JsonSerializable;
 use App\Entity\Recompensa;
-use Doctrine\ORM\Mapping as ORM;
+use App\Enums\Habilidades;
 use App\Repository\PersonagemRepository;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use JsonSerializable;
 
 /**
  * @ORM\Entity(repositoryClass=PersonagemRepository::class)
@@ -47,6 +48,7 @@ class Personagem implements JsonSerializable
         $this->personagemHistoricosArray = $collection;
         return $this->personagemHistoricosArray;
     }
+
 
 
     /**

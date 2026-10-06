@@ -2,10 +2,11 @@
 
 namespace App\Service;
 
-use App\Entity\User;
-use DateTimeImmutable;
 use App\Entity\Personagem;
+use App\Entity\User;
 use App\Enums\ClassesEspecializacoes;
+use App\Enums\Habilidades;
+use DateTimeImmutable;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectRepository;
 
@@ -59,7 +60,6 @@ class PersonagensService
 
             for ($i=0; $i < count($personagens); $i++) { 
                 $atributos = json_decode($personagens[$i]->getAtributosjson(), true);
-                $atributos['linhaArvoreMaxima'] = ClassesEspecializacoes::getQuantidadePontos($personagens[$i]->getNivel());
                 $personagens[$i]->setAtributosjson(json_encode($atributos));
             }
 
@@ -85,20 +85,35 @@ class PersonagensService
     private function setDefaultStatusJson(Personagem $personagem)
     {
         $defaults = [
+            ['nome' => 'default_vidaMaxima', 'valor' => 10],
+            ['nome' => 'default_vidaAtual', 'valor' => 10],
+            ['nome' => 'default_ataque', 'valor' => 1],
+            ['nome' => 'default_defesa', 'valor' => 1],
+            ['nome' => 'default_critChance', 'valor' => 1],
+            ['nome' => 'default_cura', 'valor' => 1],
+            
             ['nome' => 'vidaMaxima', 'valor' => 10],
             ['nome' => 'vidaAtual', 'valor' => 10],
             ['nome' => 'ataque', 'valor' => 1],
-            ['nome' => 'defesa', 'valor' => 1]
+            ['nome' => 'defesa', 'valor' => 1],
+            ['nome' => 'critChance', 'valor' => 1],
+            ['nome' => 'cura', 'valor' => 1],
         ];
         if($personagem->getAtributosjson() == null || $personagem->getAtributosjson() == '' || $personagem->getAtributosjson() == '{}') {
             $personagem->setAtributosjson(json_encode([]));
         }
         $dados = json_decode($personagem->getAtributosjson(), true);
         foreach ($defaults as $key => $atributoDefault) {
-            if(!isset($dados[$atributoDefault['nome']])) {
-                $dados[$atributoDefault['nome']] = $atributoDefault['valor'];
-            }
+            $dados[$atributoDefault['nome']] = $atributoDefault['valor'];
         }
+
+        $dados['modificadores'] = [
+            Habilidades::ATRIBUTO_DANO => 0,
+            Habilidades::ATRIBUTO_CRITCHANCE => 0,
+            Habilidades::ATRIBUTO_VIDAMAXIMA => 0,
+            Habilidades::ATRIBUTO_DEFESA => 0,
+            Habilidades::ATRIBUTO_CURA => 0,
+        ];
         $personagem->setAtributosjson(json_encode($dados));
         return $personagem;
     }
@@ -151,6 +166,7 @@ class PersonagensService
             
             $personagem->setUpdatedAt(new DateTimeImmutable());
             $personagem = $this->setDefaultStatusJson($personagem);
+            $personagem = $this->processaArvores($personagem);
 
             $entityManager->persist($personagem);
             
@@ -161,6 +177,32 @@ class PersonagensService
             $entityManager->getConnection()->rollback();
             throw $th;
         }
+    }
+
+    public function processaArvores(Personagem $personagem) {
+        $atributos = json_decode($personagem->getAtributosjson(), true);
+        $modificadores = [
+            Habilidades::ATRIBUTO_DANO => 0,
+            Habilidades::ATRIBUTO_CRITCHANCE => 0,
+            Habilidades::ATRIBUTO_VIDAMAXIMA => 0,
+            Habilidades::ATRIBUTO_DEFESA => 0,
+            Habilidades::ATRIBUTO_CURA => 0,
+        ];
+
+        foreach ($atributos['habilidadesPassivas'] as $key => $habilidade) {
+            $modificadores[$habilidade['atributo']] += $habilidade['quantidade'] * $habilidade['porcentagem'];
+        }
+
+        $atributos['modificadores'] = $modificadores;
+        $atributos['vidaMaxima'] = ( ( $modificadores[Habilidades::ATRIBUTO_VIDAMAXIMA] * $atributos['vidaMaxima'] ) / 100 ) + $atributos['vidaMaxima'];
+        $atributos['ataque'] = ( ( $modificadores[Habilidades::ATRIBUTO_DANO] * $atributos['ataque'] ) / 100 ) + $atributos['ataque'];
+        $atributos['defesa'] = ( ( $modificadores[Habilidades::ATRIBUTO_DEFESA] * $atributos['defesa'] ) / 100 ) + $atributos['defesa'];
+        $atributos['critChance'] = ( ( $modificadores[Habilidades::ATRIBUTO_CRITCHANCE] * $atributos['critChance'] ) / 100 ) + $atributos['critChance'];
+        $atributos['cura'] = ( ( $modificadores[Habilidades::ATRIBUTO_CURA] * $atributos['cura'] ) / 100 ) + $atributos['cura'];
+        $atributos['vidaAtual'] = $atributos['vidaMaxima'];
+
+        $personagem->setAtributosjson(json_encode($atributos));
+        return $personagem;
     }
 
 }

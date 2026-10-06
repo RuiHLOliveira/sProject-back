@@ -5,7 +5,7 @@ namespace App\Service;
 use App\Entity\User;
 use DateTimeImmutable;
 use App\Entity\Historico;
-use App\Enums\ClassesEspecializacoes;
+use App\Enums\Arvores;
 use App\Enums\Habilidades;
 use App\Service\HabitosService;
 use App\Service\TarefasService;
@@ -13,9 +13,9 @@ use App\Service\ProjetosService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
-class ClassesService
+class ArvoresService
 {
-    private array $listaClasses;
+    private array $listaArvores;
 
     public function __construct() {
         $this->buildList();
@@ -23,14 +23,14 @@ class ClassesService
 
     public function findAll(User $usuario, array $filters = [], array $orderBy = null): array
     {
-        return $this->listaClasses;
+        return $this->listaArvores;
     }
 
-    public function listaClassesUseCase(User $usuario, array $filters = [], array $orderBy = null) : array
+    public function listaArvoresUseCase(User $usuario, array $filters = [], array $orderBy = null) : array
     {
         try {
-            $classes = $this->findAll($usuario, $filters, $orderBy);
-            return $classes;
+            $arvores = $this->findAll($usuario, $filters, $orderBy);
+            return $arvores;
         } catch (\Exception $e) {
             throw $e;
         }
@@ -38,6 +38,6 @@ class ClassesService
 
     private function buildList ()
     {
-        $this->listaClasses = ClassesEspecializacoes::getClasses();
+        $this->listaArvores = Arvores::getArvores();
     }
 }
