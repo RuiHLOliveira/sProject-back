@@ -2,19 +2,20 @@
 
 namespace App\Controller;
 
-use Exception;
-use DateTimeImmutable;
 use App\Entity\Projeto;
 use App\Service\ProjetosService;
 use App\Service\TagsService;
+use App\Utils\ErrorBuilder;
+use DateTimeImmutable;
 use Doctrine\Persistence\ManagerRegistry;
+use Exception;
 use LogicException;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Annotation\Route;
 
 class ProjetosController extends AbstractController
 {
@@ -86,9 +87,9 @@ class ProjetosController extends AbstractController
 
             return new JsonResponse($projetos);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => ErrorBuilder::getError($e)], Response::HTTP_BAD_REQUEST);
         } catch (\Error $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => ErrorBuilder::getError($e)], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -131,9 +132,9 @@ class ProjetosController extends AbstractController
 
             return new JsonResponse($projeto, Response::HTTP_CREATED);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => ErrorBuilder::getError($e)], Response::HTTP_BAD_REQUEST);
         } catch (\Error $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => ErrorBuilder::getError($e)], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -185,9 +186,9 @@ class ProjetosController extends AbstractController
 
             return new JsonResponse($dados, Response::HTTP_CREATED);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => ErrorBuilder::getError($e)], Response::HTTP_BAD_REQUEST);
         } catch (\Error $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => ErrorBuilder::getError($e)], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -215,9 +216,9 @@ class ProjetosController extends AbstractController
 
             return new JsonResponse($projeto, Response::HTTP_CREATED);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => ErrorBuilder::getError($e)], Response::HTTP_BAD_REQUEST);
         } catch (\Error $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => ErrorBuilder::getError($e)], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -266,9 +267,9 @@ class ProjetosController extends AbstractController
 
             return new JsonResponse($projeto, Response::HTTP_CREATED);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => ErrorBuilder::getError($e)], Response::HTTP_BAD_REQUEST);
         } catch (\Error $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => ErrorBuilder::getError($e)], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -287,7 +288,7 @@ class ProjetosController extends AbstractController
             $projeto = $this->projetosService->findOne($usuario, $projeto->getId());
             return new JsonResponse($response, Response::HTTP_OK);
         } catch (\Exception $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['message' => ErrorBuilder::getError($e)], Response::HTTP_BAD_REQUEST);
         }
     }
 }

@@ -23,6 +23,7 @@ class Projeto implements JsonSerializable
             'nome' => $this->getNome(),
             'anotacoes' => $this->getAnotacoes(),
             'fixado' => $this->getFixado(),
+            'objetivo' => $this->getObjetivo(),
             'situacao' => $this->getSituacao(),
             'situacaoDescritivo' => $this->getSituacaoDescritivo(),
             'prioridade' => $this->getPrioridade(),
@@ -39,9 +40,17 @@ class Projeto implements JsonSerializable
         if($this->serializarProjetosfotos) {
             $array['projetosfotos'] = $this->projetosfotosArray;
         }
+
+        if(!$this->serializarObjetivo && $this->getObjetivo() != null) {
+            $array['objetivo'] = $this->getObjetivo()->getId();
+        } else if($this->serializarObjetivo) {
+            $array['objetivo'] = $this->getObjetivo();
+        } else {
+            $array['objetivo'] = null;
+        }
         return $array;
     }
-    
+
     const SITUACAO_PENDENTE = 1;
     const SITUACAO_AGUARDANDO_RESPOSTA = 2;
     const SITUACAO_PAUSADO_INDEFINIDAMENTE = 3;
@@ -80,6 +89,9 @@ class Projeto implements JsonSerializable
     private $serializarProjetosfotos;
     private $tarefasArray;
     private $projetosfotosArray;
+    
+    protected $serializarObjetivo;
+    
 
     /**
      * Marca as tarefas deste Projeto para serem serializadas
@@ -103,6 +115,11 @@ class Projeto implements JsonSerializable
         $collection = $collection->toArray();
         $this->projetosfotosArray = $collection;
     }
+
+    public function serializarObjetivo() {
+        $this->serializarObjetivo = true;
+    }
+    
     
     public function fillSituacaoDescritivo(){
         if($this->getSituacao() != null && $this->getSituacao() > 0)
@@ -140,6 +157,12 @@ class Projeto implements JsonSerializable
      * @ORM\Column(type="datetime_immutable", nullable=true)
      */
     private $deleted_at;
+    
+    /**
+     * @ORM\ManyToOne(targetEntity=Objetivo::class, inversedBy="projetos")
+     * @ORM\JoinColumn(nullable=true)
+     */
+    private $objetivo;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="projetos")
@@ -264,6 +287,19 @@ class Projeto implements JsonSerializable
 
         return $this;
     }
+
+    public function getObjetivo(): ?Objetivo
+    {
+        return $this->objetivo;
+    }
+
+    public function setObjetivo(?Objetivo $objetivo): self
+    {
+        $this->objetivo = $objetivo;
+
+        return $this;
+    }
+
 
     /**
      * @return Collection<int, Tarefa>
